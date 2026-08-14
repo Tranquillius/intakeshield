@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors / IDEs
+*~
+*.swp
+*.swo
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# Logs & local env
+*.log
+.env
+.env.*
+tmp/
+
+# Built packages (publish via GitHub Releases, not git)
+*.zpm
+releases/
+
+# Ruby / bundler (if used locally)
+.bundle/
+vendor/bundle/
+
+# Other local tooling
+coverage/
+node_modules/

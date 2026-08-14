@@ -1,0 +1,9 @@
+<% if _.isEmpty(@reasons_list): %>
+  -
+<% else: %>
+  <ul class="list">
+    <% for reason in @reasons_list: %>
+      <li><%- reason %></li>
+    <% end %>
+  </ul>
+<% end %>

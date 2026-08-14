@@ -1,0 +1,9 @@
+ALTCHA widget 3.2.1
+License: MIT
+https://github.com/altcha-org/altcha
+
+Vendored from npm package altcha@3.2.1
+File: dist/main/altcha.umd.min.cjs → altcha.min.js
+
+Served same-origin so Zammad's script-src 'self' CSP can load it.
+Do not replace this with a CDN URL.

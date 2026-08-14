@@ -1,0 +1,2 @@
+module IntakeShield::Captcha
+end

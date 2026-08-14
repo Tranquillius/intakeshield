@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# Links the package files into a local Zammad source installation for
+# development. After linking, changes in this repository are picked up
+# by the Zammad development server (set DEVELOPMENT_FILE_WATCHER to
+# "file_update_checker" for reliable change detection).
+#
+# Usage:
+#   bin/link /path/to/zammad
+#   ZAMMAD_DIR=/path/to/zammad bin/link
+
+require 'fileutils'
+require 'json'
+
+ROOT = File.expand_path('..', __dir__).freeze
+SZPM = File.join(ROOT, 'intake_shield.szpm').freeze
+
+target = ARGV[0] || ENV.fetch('ZAMMAD_DIR', nil)
+abort('Usage: bin/link /path/to/zammad') if target.to_s.empty?
+abort("Not a Zammad directory: #{target}") if !File.directory?(File.join(target, 'app/models'))
+
+manifest = JSON.parse(File.read(SZPM))
+manifest.fetch('files', []).each do |entry|
+  source = File.join(ROOT, entry['location'])
+  destination = File.join(target, entry['location'])
+  FileUtils.mkdir_p(File.dirname(destination))
+  FileUtils.rm_f(destination)
+  FileUtils.ln_sf(source, destination)
+  puts "linked #{entry['location']}"
+end
+FileUtils.ln_sf(SZPM, File.join(target, 'intake_shield.szpm'))
+puts 'done'

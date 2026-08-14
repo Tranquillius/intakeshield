@@ -1,0 +1,21 @@
+<% if @scan_stats: %>
+  <div class="alert alert--info">
+    <%- @T('Last scan') %>:
+    <%- @T('considered') %>=<%- @scan_stats.considered %>,
+    <%- @T('scheduled') %>=<%- @scan_stats.scheduled %>,
+    <%- @T('skipped (role)') %>=<%- @scan_stats.skipped_role %>,
+    <%- @T('skipped (ticket count)') %>=<%- @scan_stats.skipped_ticket_count %>,
+    <%- @T('skipped (low score)') %>=<%- @scan_stats.skipped_low_score %>,
+    <%- @T('skipped (already listed)') %>=<%- @scan_stats.skipped_already_listed %>,
+    <%- @T('skipped (whitelisted)') %>=<%- @scan_stats.skipped_whitelisted %>
+    <% if @scan_stats.scan_mode: %>
+      , <%- @T('mode') %>=<%- App.i18n.translateContent(@scan_stats.scan_mode) %>
+    <% end %>
+    <% if @scan_stats.candidate_role: %>
+      (<%- @T('Candidate Role') %>: <%- @scan_stats.candidate_role %>)
+    <% end %>
+    <% if @scan_stats.error: %>
+      — <%- App.i18n.translateContent(@scan_stats.error) %>
+    <% end %>
+  </div>
+<% end %>

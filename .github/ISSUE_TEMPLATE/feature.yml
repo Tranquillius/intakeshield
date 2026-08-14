@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest an enhancement for IntakeShield
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the problem this would solve on a generic Zammad 7.x instance.
+        IntakeShield is a classic package (classic admin UI).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional

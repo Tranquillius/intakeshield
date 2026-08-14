@@ -1,0 +1,355 @@
+{
+  "name": "IntakeShield",
+  "version": "0.4.3",
+  "vendor": "IntakeShield",
+  "license": "GNU Affero General Public License v3.0 (AGPL-3.0)",
+  "url": "https://github.com/Tranquillius/intakeshield",
+  "change_log": [
+    {
+      "version": "0.1.0",
+      "date": "2026-08-07 00:00:00 UTC",
+      "log": "Initial version."
+    },
+    {
+      "version": "0.3.5",
+      "date": "2026-08-11 18:20:43 UTC",
+      "log": "Add maximum account age setting, whitelist role removal, and hourly user cleanup scan."
+    },
+    {
+      "version": "0.3.6",
+      "date": "2026-08-11 18:46:07 UTC",
+      "log": "Ensure max account age setting is created on upgrades; refresh settings UI from server."
+    },
+    {
+      "version": "0.3.7",
+      "date": "2026-08-11 18:56:50 UTC",
+      "log": "Treat integer setting value 0 as valid (e.g. min_age_days=0) instead of falling back to defaults via .presence."
+    },
+    {
+      "version": "0.3.8",
+      "date": "2026-08-11 19:09:39 UTC",
+      "log": "When disposable_domain weight meets the score threshold, skip candidate-role and ticket-count filters for blacklisted users; add IntakeShield.diagnose_user."
+    },
+    {
+      "version": "0.3.9",
+      "date": "2026-08-11 19:15:25 UTC",
+      "log": "Make IntakeShield.diagnose_user public and include active whitelist/blacklist patterns in the diagnosis output."
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-08-13 11:43:18 UTC",
+      "log": "Optional CAPTCHA on classic sign-up and password-reset requests (self-hosted ALTCHA or the form-channel provider). Skip ticket-only deletion when the customer is already a spam-user candidate so user deletion removes the tickets."
+    },
+    {
+      "version": "0.4.1",
+      "date": "2026-08-14 16:20:00 UTC",
+      "log": "Serve the ALTCHA widget from the Zammad instance instead of jsdelivr so the default CSP no longer blocks sign-up and password-reset captchas."
+    },
+    {
+      "version": "0.4.2",
+      "date": "2026-08-14 16:48:00 UTC",
+      "log": "Drop stale Taskbar/RecentView IDs before Data Privacy deletion; never score or auto-learn infrastructure and government domains as disposable; whitelist sync only writes and logs when role membership actually changes."
+    },
+    {
+      "version": "0.4.3",
+      "date": "2026-08-14 17:00:00 UTC",
+      "log": "Solve the signup CAPTCHA on the main thread. Zammad's CSP blocks ALTCHA's blob/data Web Workers, which left the widget retrying challenges forever."
+    }
+  ],
+  "description": [
+    {
+      "language": "en",
+      "text": "E-mail whitelist rules, signup CAPTCHA, and automated data privacy cleanup of spam users."
+    },
+    {
+      "language": "de",
+      "text": "E-Mail-Whitelist-Regeln, Registrierungs-Captcha und automatisierte Data-Privacy-Bereinigung von Spam-Benutzern."
+    }
+  ],
+  "files": [
+    {
+      "location": "app/assets/javascripts/app/controllers/intake_shield/blacklist.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/controllers/intake_shield/keyword.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/controllers/intake_shield/pending_base.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/controllers/intake_shield/pending_deletions.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/controllers/intake_shield/pending_tickets.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/controllers/intake_shield/settings.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/controllers/intake_shield/setup.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/controllers/intake_shield/whitelist.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/lib/app_post/intake_shield.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/lib/app_post/intake_shield_captcha.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/models/intake_shield_blacklist.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/models/intake_shield_keyword.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/models/intake_shield_whitelist.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/views/intake_shield/_pending_reasons.jst.eco",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/views/intake_shield/_pending_tickets_scan_stats.jst.eco",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/views/intake_shield/_pending_users_scan_stats.jst.eco",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/views/intake_shield/pending_deletion_detail.jst.eco",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/views/intake_shield/pending_deletions.jst.eco",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/views/intake_shield/pending_ticket_detail.jst.eco",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/views/intake_shield/pending_tickets.jst.eco",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/views/intake_shield/settings.jst.eco",
+      "permission": 644
+    },
+    {
+      "location": "app/controllers/intake_shield_blacklists_controller.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/controllers/intake_shield_captcha_controller.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/controllers/intake_shield_keywords_controller.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/controllers/intake_shield_pending_base_controller.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/controllers/intake_shield_pending_deletions_controller.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/controllers/intake_shield_pending_tickets_controller.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/controllers/intake_shield_whitelists_controller.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/blacklist.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/captcha.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/captcha/altcha.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/domain_matching.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/keyword.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/logger.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/never_disposable.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/pending_deletion.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/pending_record.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/pending_ticket.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/scorer.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/signup_captcha.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/stale_ui_cleanup.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/models/intake_shield/whitelist.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/policies/controllers/intake_shield_blacklists_controller_policy.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/policies/controllers/intake_shield_captcha_controller_policy.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/policies/controllers/intake_shield_keywords_controller_policy.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/policies/controllers/intake_shield_pending_deletions_controller_policy.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/policies/controllers/intake_shield_pending_tickets_controller_policy.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/policies/controllers/intake_shield_whitelists_controller_policy.rb",
+      "permission": 644
+    },
+    {
+      "location": "config/initializers/intake_shield_delay_hours_callback.rb",
+      "permission": 644
+    },
+    {
+      "location": "config/initializers/intake_shield_signup_captcha.rb",
+      "permission": 644
+    },
+    {
+      "location": "config/initializers/intake_shield_user_callback.rb",
+      "permission": 644
+    },
+    {
+      "location": "config/routes/intake_shield.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000000_create_base.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000039_ensure_upgrade_from_021.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000040_ensure_schedulers_active.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000050_add_whitelist_remove_roles.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000051_hourly_user_cleanup_scan.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000052_add_max_age_days.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000053_sync_hourly_scan_translations.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000054_ensure_max_age_days_setting.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000055_sync_delay_hours_zero_semantics.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000056_add_signup_captcha.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000057_skip_ticket_when_user_deletion.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000058_sync_captcha_widget_translations.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000059_deactivate_never_disposable_blacklist.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260807000059_sync_captcha_solver_translations.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/support/de_translations.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/support/parse_weights.rb",
+      "permission": 644
+    },
+    {
+      "location": "public/intake_shield/SOURCE.txt",
+      "permission": 644
+    },
+    {
+      "location": "public/intake_shield/altcha.min.js",
+      "permission": 644
+    }
+  ]
+}

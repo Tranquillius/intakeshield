@@ -1,0 +1,16 @@
+<% if @scan_stats: %>
+  <div class="alert alert--info">
+    <%- @T('Last scan') %>:
+    <%- @T('considered') %>=<%- @scan_stats.considered %>,
+    <%- @T('scheduled') %>=<%- @scan_stats.scheduled %>,
+    <%- @T('skipped (already listed)') %>=<%- @scan_stats.skipped_already_listed %>,
+    <%- @T('skipped (privacy task)') %>=<%- @scan_stats.skipped_privacy_task %>,
+    <%- @T('skipped (user deletion)') %>=<%- @scan_stats.skipped_user_deletion || 0 %>
+    <% if @scan_stats.spam_tag: %>
+      (<%- @T('Spam Tag') %>: <%- @scan_stats.spam_tag %>)
+    <% end %>
+    <% if @scan_stats.error: %>
+      — <%- App.i18n.translateContent(@scan_stats.error) %>
+    <% end %>
+  </div>
+<% end %>

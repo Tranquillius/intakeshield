@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+# Builds a distributable .zpm package from the .szpm manifest.
+#
+# Usage:
+#   bin/build [version]
+#
+# The file list of the .szpm manifest is regenerated from the package
+# directories on every run, so there is no separate "update" step.
+
+require 'base64'
+require 'fileutils'
+require 'json'
+
+PACKAGE_NAME = 'intake_shield'.freeze
+ROOT = File.expand_path('..', __dir__).freeze
+SZPM = File.join(ROOT, "#{PACKAGE_NAME}.szpm").freeze
+RELEASES = File.join(ROOT, 'releases').freeze
+
+SCAN_DIRS   = %w[app config db lib public].freeze
+EXTRA_GLOBS = ['Gemfile.local.*'].freeze
+
+def collect_files
+  files = []
+  SCAN_DIRS.each do |dir|
+    Dir.glob(File.join(ROOT, dir, '**', '*')).each do |path|
+      files << path if File.file?(path)
+    end
+  end
+  EXTRA_GLOBS.each do |glob|
+    Dir.glob(File.join(ROOT, glob)).each do |path|
+      files << path if File.file?(path)
+    end
+  end
+  files.map { |path| path.sub("#{ROOT}/", '') }.sort
+end
+
+abort("Manifest not found: #{SZPM}") if !File.exist?(SZPM)
+
+manifest = JSON.parse(File.read(SZPM))
+manifest['files'] = collect_files.map do |location|
+  { 'location' => location, 'permission' => 644 }
+end
+File.write(SZPM, "#{JSON.pretty_generate(manifest)}\n")
+
+version = ARGV[0] || manifest['version']
+abort('Usage: bin/build [version]') if version.to_s.strip.empty?
+manifest['version'] = version
+
+zpm = manifest.dup
+zpm['buildhost'] = 'intakeshield'
+zpm['builddate'] = Time.now.utc.strftime('%Y-%m-%d %H:%M:%S UTC')
+zpm['files'] = manifest['files'].map do |entry|
+  content = File.binread(File.join(ROOT, entry['location']))
+  entry.merge(
+    'encode'  => 'base64',
+    'content' => Base64.encode64(content),
+  )
+end
+
+FileUtils.mkdir_p(RELEASES)
+output = File.join(RELEASES, "#{PACKAGE_NAME}-#{version}.zpm")
+File.write(output, "#{JSON.pretty_generate(zpm)}\n")
+puts "updated #{SZPM} (#{manifest['files'].length} files)"
+puts "created #{output}"

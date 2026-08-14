@@ -1,0 +1,54 @@
+<div class="modal-body">
+  <dl class="intake-shield-dl">
+    <div>
+      <dt><%- @T('E-Mail') %></dt>
+      <dd><%- (@record.user && @record.user.email) || '-' %></dd>
+    </div>
+    <div>
+      <dt><%- @T('Name') %></dt>
+      <dd>
+        <% if @record.user: %>
+          <%- [@record.user.firstname, @record.user.lastname].filter(Boolean).join(' ') || '-' %>
+        <% else: %>
+          -
+        <% end %>
+      </dd>
+    </div>
+    <div>
+      <dt><%- @T('Score') %></dt>
+      <dd><%- @record.score %></dd>
+    </div>
+    <div>
+      <dt><%- @T('State') %></dt>
+      <dd><%- if @record.state then App.i18n.translateContent(@record.state) else '-' %></dd>
+    </div>
+    <div>
+      <dt><%- @T('Tickets') %></dt>
+      <dd>
+        <% if @record.user && @record.user.tickets_count != null: %>
+          <%- @record.user.tickets_count %>
+        <% else: %>
+          -
+        <% end %>
+      </dd>
+    </div>
+    <div>
+      <dt><%- @T('Account created') %></dt>
+      <dd>
+        <% if @record.user && @record.user.created_at: %>
+          <%- App.i18n.translateTimestamp(@record.user.created_at) %>
+        <% else: %>
+          -
+        <% end %>
+      </dd>
+    </div>
+    <div>
+      <dt><%- @T('Scheduled deletion') %></dt>
+      <dd><%- App.i18n.translateTimestamp(@record.execute_at) %></dd>
+    </div>
+    <div class="intake-shield-dl-row--wide">
+      <dt><%- @T('Reasons') %></dt>
+      <dd><%- App.view('intake_shield/_pending_reasons')(reasons_list: @record.reasons_list) %></dd>
+    </div>
+  </dl>
+</div>

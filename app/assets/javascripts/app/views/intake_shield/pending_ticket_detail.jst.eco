@@ -1,0 +1,57 @@
+<div class="modal-body">
+  <dl class="intake-shield-dl">
+    <div>
+      <dt><%- @T('Ticket') %></dt>
+      <dd>
+        <% if @record.ticket: %>
+          <a href="#ticket/zoom/<%- @record.ticket.id %>"><%- @record.ticket.number %></a>
+        <% else: %>
+          -
+        <% end %>
+      </dd>
+    </div>
+    <div>
+      <dt><%- @T('State') %></dt>
+      <dd><%- if @record.state then App.i18n.translateContent(@record.state) else '-' %></dd>
+    </div>
+    <div class="intake-shield-dl-row--wide">
+      <dt><%- @T('Title') %></dt>
+      <dd><%- (@record.ticket && @record.ticket.title) || '-' %></dd>
+    </div>
+    <div class="intake-shield-dl-row--wide">
+      <dt><%- @T('Customer') %></dt>
+      <dd>
+        <% if @record.ticket && @record.ticket.customer: %>
+          <%- [@record.ticket.customer.firstname, @record.ticket.customer.lastname].filter(Boolean).join(' ') || '-' %>
+          <% if @record.ticket.customer.email: %>
+            <span class="intake-shield-dl-meta"><%- @record.ticket.customer.email %></span>
+          <% end %>
+        <% else: %>
+          -
+        <% end %>
+      </dd>
+    </div>
+    <div>
+      <dt><%- @T('Score') %></dt>
+      <dd><%- @record.score %></dd>
+    </div>
+    <div>
+      <dt><%- @T('Ticket created') %></dt>
+      <dd>
+        <% if @record.ticket && @record.ticket.created_at: %>
+          <%- App.i18n.translateTimestamp(@record.ticket.created_at) %>
+        <% else: %>
+          -
+        <% end %>
+      </dd>
+    </div>
+    <div>
+      <dt><%- @T('Scheduled deletion') %></dt>
+      <dd><%- App.i18n.translateTimestamp(@record.execute_at) %></dd>
+    </div>
+    <div class="intake-shield-dl-row--wide">
+      <dt><%- @T('Reasons') %></dt>
+      <dd><%- App.view('intake_shield/_pending_reasons')(reasons_list: @record.reasons_list) %></dd>
+    </div>
+  </dl>
+</div>

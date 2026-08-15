@@ -1,14 +1,12 @@
-<div class="page-header">
-  <div class="page-header-meta">
-    <a class="btn js-refresh"><%- @T('Refresh') %></a>
-    <a class="btn btn--primary js-scan"><%- @T('Scan now') %></a>
-    <% if !_.isEmpty(@records): %>
-      <a class="btn btn--danger js-execute-all"><%- @T('Delete all now') %></a>
-    <% end %>
-  </div>
-</div>
-
 <p class="page-description"><%- @T('Users that will be deleted by a data privacy task after the configured delay. A background scan runs once per hour; due deletions are executed every 30 minutes. Use "Scan now" to run the scan immediately.') %></p>
+
+<div class="intake-shield-tab-actions">
+  <a class="btn js-refresh"><%- @T('Refresh') %></a>
+  <a class="btn btn--primary js-scan"><%- @T('Scan now') %></a>
+  <% if !_.isEmpty(@records): %>
+    <a class="btn btn--danger js-execute-all"><%- @T('Delete all now') %></a>
+  <% end %>
+</div>
 
 <%- App.view('intake_shield/_pending_users_scan_stats')(scan_stats: @scan_stats) %>
 

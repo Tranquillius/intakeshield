@@ -32,7 +32,7 @@ IntakeShieldSettingsSections =
     'intake_shield_spam_engine_password'
   ]
 
-class IntakeShieldSettingsPane extends App.Controller
+class App.ControllerIntakeShieldSettingsPane extends App.Controller
   constructor: ->
     super
     @html App.view('intake_shield/settings_pane')(sections: @sections || [])
@@ -54,7 +54,7 @@ class IntakeShieldSettingsPane extends App.Controller
         item = new App.SettingsAreaItem(setting: setting)
       container.append(item.el)
 
-class IntakeShieldSettings extends App.ControllerTabs
+class App.ControllerIntakeShieldSettings extends App.ControllerTabs
   @requiredPermission: 'admin.intake_shield'
   header: __('Settings')
   subHeader: __('IntakeShield')
@@ -67,7 +67,8 @@ class IntakeShieldSettings extends App.ControllerTabs
   elements:
     '.js-header-switch input': 'headerSwitchInput'
 
-  constructor: ->
+  constructor: (params) ->
+    params = App.IntakeShield.useSingleMainEl(params || {})
     super
     @tabs = []
     App.Setting.fetchFull(
@@ -76,6 +77,12 @@ class IntakeShieldSettings extends App.ControllerTabs
     )
 
   didFetch: =>
+    return if !@el?[0] || !document.body.contains(@el[0])
+
+    last = @Config.get('lastTab')
+    if !last || String(last).indexOf('#is-settings-') isnt 0
+      @Config.set('lastTab', '#is-settings-general')
+
     setting = App.Setting.findByAttribute('name', 'intake_shield_active')
     value = setting?.state_current?.value
     @headerSwitchChecked = value is true || value is 'true'
@@ -83,7 +90,7 @@ class IntakeShieldSettings extends App.ControllerTabs
       {
         name: __('General')
         target: 'is-settings-general'
-        controller: IntakeShieldSettingsPane
+        controller: App.ControllerIntakeShieldSettingsPane
         params:
           sections: [
             {
@@ -101,7 +108,7 @@ class IntakeShieldSettings extends App.ControllerTabs
       {
         name: __('Blacklist')
         target: 'is-settings-blacklist'
-        controller: IntakeShieldSettingsPane
+        controller: App.ControllerIntakeShieldSettingsPane
         params:
           sections: [
             {
@@ -113,7 +120,7 @@ class IntakeShieldSettings extends App.ControllerTabs
       {
         name: __('Cleanup')
         target: 'is-settings-cleanup'
-        controller: IntakeShieldSettingsPane
+        controller: App.ControllerIntakeShieldSettingsPane
         params:
           sections: [
             {
@@ -125,7 +132,7 @@ class IntakeShieldSettings extends App.ControllerTabs
       {
         name: __('Spam Engine')
         target: 'is-settings-engine'
-        controller: IntakeShieldSettingsPane
+        controller: App.ControllerIntakeShieldSettingsPane
         params:
           sections: [
             {
@@ -136,7 +143,31 @@ class IntakeShieldSettings extends App.ControllerTabs
       }
     ]
     @render()
+    @placeHeaderSwitch()
     @refreshElements()
+
+  # ControllerTabs puts an unlabeled switch next to the page heading, so it
+  # reads as "Settings". Keep the heading and give the switch its own caption.
+  placeHeaderSwitch: ->
+    $switch = @$('.page-header .js-header-switch').first()
+    return if !$switch.length
+    $header = $switch.closest('.page-header')
+    return if $header.find('.intake-shield-header-switch').length
+
+    $meta = $header.children('.page-header-meta')
+    if !$meta.length
+      $meta = $('<div class="page-header-meta"></div>')
+      $header.append($meta)
+
+    caption = App.i18n.translateContent(__('Master Switch'))
+    hint = App.i18n.translateContent(__('Enable or disable IntakeShield as a whole.'))
+    $switch.attr('title', hint)
+    $switch.find('input').attr('aria-label', caption)
+
+    $wrap = $('<div class="intake-shield-header-switch"></div>')
+    $label = $('<span class="intake-shield-header-switch-label"></span>').text(caption)
+    $wrap.append($switch).append($label)
+    $meta.prepend($wrap)
 
   didChangeHeaderSwitch: (e) =>
     input = $(e.currentTarget)
@@ -156,4 +187,4 @@ class IntakeShieldSettings extends App.ControllerTabs
       input.prop('checked', !value)
       input.prop('disabled', false)
 
-App.Config.set('IntakeShieldSettings', { prio: 300, name: __('Settings'), parent: '#intake_shield', target: '#intake_shield/settings', controller: IntakeShieldSettings, permission: ['admin.intake_shield'] }, 'NavBarAdmin')
+App.Config.set('IntakeShieldSettings', { prio: 300, name: __('Settings'), parent: '#intake_shield', target: '#intake_shield/settings', controller: App.ControllerIntakeShieldSettings, permission: ['admin.intake_shield'] }, 'NavBarAdmin')

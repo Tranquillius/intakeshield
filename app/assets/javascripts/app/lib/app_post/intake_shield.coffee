@@ -1,5 +1,20 @@
 # Shared IntakeShield frontend helpers (reason i18n, generic index, pending tables).
 App.IntakeShield =
+  # Manage instantiates admin pages with el: $('.main div') / $('.main > div').
+  # If a previous controller threw before activeController was assigned, leftover
+  # wrappers stay in .main and that selector matches more than one node.
+  useSingleMainEl: (params) ->
+    return params if !params?.el
+    $el = $(params.el)
+    return params if $el.length <= 1
+
+    $direct = $el.filter('.main > div')
+    $direct = $el if !$direct.length
+    last = $direct.get($direct.length - 1)
+    $direct.not(last).remove()
+    params.el = $(last)
+    params
+
   translateReasonList: (reasons) ->
     (App.IntakeShield.translateReason(reason) for reason in (reasons || []))
 
@@ -27,6 +42,9 @@ App.IntakeShield =
     el = $(options.el || controller.el)
     page = parseInt(controller.page, 10) || 1
     controller.page = page
+    # GenericIndex turns model.description into a Description button (or an
+    # empty-state dump). Filters already shows that copy under the nav tabs.
+    App[options.genericObject]?.description = undefined
     controller.genericController = new App.ControllerGenericIndex(
       el: el
       id: controller.id
@@ -41,8 +59,7 @@ App.IntakeShield =
         pagerBaseUrl: options.pagerBaseUrl
         pagerSelected: page
         pagerPerPage: 150
-        navupdate: '#intake_shield'
-        notes: options.notes
+        navupdate: '#intake_shield/filters'
         buttons: [
           { name: options.newButton, 'data-type': 'new', class: 'btn--success' }
         ]

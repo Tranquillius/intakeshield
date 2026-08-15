@@ -2,6 +2,14 @@
 
 Package versions are also recorded in `intake_shield.szpm`.
 
+## 0.8.2 — 2026-08-15
+
+Show Filters and Spam help text under the nav tabs (no Description button). Label the Settings master switch separately from the page heading.
+
+## 0.8.1 — 2026-08-15
+
+Fix empty Filters/Spam admin pages and duplicated Settings tabs caused by CoffeeScript controllers not being visible across files.
+
 ## 0.8.0 — 2026-08-15
 
 Group the admin UI into Filters (Whitelist / Blacklist / Keywords), Spam (Users / Tickets), and Settings tabs, matching Zammad's Knowledge Base pattern. The master switch is the Settings header toggle.

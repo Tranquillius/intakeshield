@@ -7,7 +7,7 @@ IntakeShieldLegacyTargets =
   pending_deletions: { target: 'spam',    tab: 'users' }
   pending_tickets:   { target: 'spam',    tab: 'tickets' }
 
-class IntakeShieldRouter extends App.ControllerPermanent
+class App.IntakeShieldRouter extends App.ControllerPermanent
   @requiredPermission: ['admin.intake_shield']
 
   constructor: (params) ->
@@ -37,11 +37,11 @@ class IntakeShieldRouter extends App.ControllerPermanent
     params
 
 # More specific routes last so Spine matches them first (unshift).
-App.Config.set('intake_shield/:target', IntakeShieldRouter, 'Routes')
-App.Config.set('intake_shield/:target/:page', IntakeShieldRouter, 'Routes')
-App.Config.set('intake_shield/:target/:page/:search_query', IntakeShieldRouter, 'Routes')
-App.Config.set('intake_shield/:target/:tab/:page', IntakeShieldRouter, 'Routes')
-App.Config.set('intake_shield/:target/:tab/:page/:search_query', IntakeShieldRouter, 'Routes')
+App.Config.set('intake_shield/:target', App.IntakeShieldRouter, 'Routes')
+App.Config.set('intake_shield/:target/:page', App.IntakeShieldRouter, 'Routes')
+App.Config.set('intake_shield/:target/:page/:search_query', App.IntakeShieldRouter, 'Routes')
+App.Config.set('intake_shield/:target/:tab/:page', App.IntakeShieldRouter, 'Routes')
+App.Config.set('intake_shield/:target/:tab/:page/:search_query', App.IntakeShieldRouter, 'Routes')
 
 App.Config.set('IntakeShield', { prio: 2600, name: __('IntakeShield'), target: '#intake_shield', permission: ['admin.intake_shield'] }, 'NavBarAdmin')
 
@@ -124,6 +124,34 @@ do ->
       width: 1.1rem;
       text-align: center;
     }
+    .intake-shield-tab-intro {
+      margin: 0.85rem 0 0.15rem;
+    }
+    .intake-shield-tab-intro .page-description {
+      margin: 0 0 0.4rem;
+    }
+    .intake-shield-tab-intro .page-description:last-child {
+      margin-bottom: 0;
+    }
+    .intake-shield-tab-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 0.75rem 0 1rem;
+    }
+    .intake-shield-header-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .intake-shield-header-switch-label {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .intake-shield-tab-body .js-description {
+      display: none !important;
+    }
     .intake-shield-tab-body > .page-header .page-header-title {
       display: none;
     }
@@ -131,18 +159,22 @@ do ->
       min-height: 0;
       background: transparent;
       border: 0;
-      padding-top: 0.5rem;
+      padding-top: 0.65rem;
     }
     .intake-shield-tab-body > .page-content {
       padding-left: 0;
       padding-right: 0;
       padding-top: 0;
     }
+    .tab-content > .tab-pane > .page-description {
+      margin-top: 0.85rem;
+      margin-bottom: 0;
+    }
     .tab-content > .tab-pane > .page-header {
       min-height: 0;
       background: transparent;
       border: 0;
-      padding-top: 0.75rem;
+      padding-top: 0.65rem;
     }
   '''
   document.head.appendChild(style)

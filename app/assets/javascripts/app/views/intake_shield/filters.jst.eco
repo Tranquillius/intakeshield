@@ -12,5 +12,12 @@
       </li>
     <% end %>
   </ul>
+  <% if @notes && @notes.length: %>
+    <div class="intake-shield-tab-intro">
+      <% for note in @notes: %>
+        <p class="page-description"><%- @T(note) %></p>
+      <% end %>
+    </div>
+  <% end %>
   <div class="js-tab-body intake-shield-tab-body"></div>
 </div>

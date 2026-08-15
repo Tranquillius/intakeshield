@@ -1,6 +1,6 @@
 {
   "name": "IntakeShield",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "vendor": "IntakeShield",
   "license": "GNU Affero General Public License v3.0 (AGPL-3.0)",
   "url": "https://github.com/Tranquillius/intakeshield",
@@ -74,6 +74,16 @@
       "version": "0.8.0",
       "date": "2026-08-15 14:20:00 UTC",
       "log": "Group the admin UI into Filters, Spam, and Settings tabs. The master switch is the Settings header toggle."
+    },
+    {
+      "version": "0.8.1",
+      "date": "2026-08-15 12:35:00 UTC",
+      "log": "Fix empty Filters and Spam admin pages and duplicated Settings tabs."
+    },
+    {
+      "version": "0.8.2",
+      "date": "2026-08-15 12:52:00 UTC",
+      "log": "Show Filters and Spam help text under the nav tabs. Label the Settings master switch separately from the page heading."
     }
   ],
   "description": [

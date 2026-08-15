@@ -1,6 +1,10 @@
-class IntakeShieldKeyword extends App.ControllerSubContent
+class App.ControllerIntakeShieldKeyword extends App.ControllerSubContent
   @requiredPermission: 'admin.intake_shield'
   header: __('Keywords')
+  @notes: [
+    __('Case-insensitive match in ticket title and first article body. Raises the spam score.')
+    __('Typical spam marketing phrases (e.g. product ads). Matching customer tickets raise the spam score.')
+  ]
 
   constructor: ->
     super
@@ -11,11 +15,6 @@ class IntakeShieldKeyword extends App.ControllerSubContent
       objects: __('Keywords')
       pagerBaseUrl: '#intake_shield/filters/keywords/'
       newButton: __('New Keyword')
-      notes: [
-        __('Case-insensitive match in ticket title and first article body. Raises the spam score.')
-        __('Typical spam marketing phrases (e.g. product ads). Matching customer tickets raise the spam score.')
-      ]
 
   show: (params) =>
     App.IntakeShield.paginateGenericIndex(@, params)
-

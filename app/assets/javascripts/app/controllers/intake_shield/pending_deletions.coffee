@@ -1,4 +1,4 @@
-class IntakeShieldPendingDeletionDetail extends App.ControllerModal
+class App.ControllerIntakeShieldPendingDeletionDetail extends App.ControllerModal
   @requiredPermission: 'admin.intake_shield'
   buttonClose: true
   buttonCancel: false
@@ -8,12 +8,12 @@ class IntakeShieldPendingDeletionDetail extends App.ControllerModal
   content: =>
     App.view('intake_shield/pending_deletion_detail')(record: @record)
 
-class IntakeShieldPendingDeletions extends App.ControllerIntakeShieldPendingList
+class App.ControllerIntakeShieldPendingDeletions extends App.ControllerIntakeShieldPendingList
   header: __('Spam Users')
   apiResource: 'intake_shield_pending_deletions'
   apiActionPrefix: 'intake_shield_pending_deletions'
   listView: 'intake_shield/pending_deletions'
-  detailController: IntakeShieldPendingDeletionDetail
+  detailController: App.ControllerIntakeShieldPendingDeletionDetail
   executeAllConfirmMessage: __('Really delete all pending users immediately via data privacy? This cannot be undone.')
   executeAllSuccessMessage: __('Immediate deletion started for %s users.')
 

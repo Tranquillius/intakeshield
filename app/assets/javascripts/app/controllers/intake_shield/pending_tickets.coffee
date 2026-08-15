@@ -1,4 +1,4 @@
-class IntakeShieldPendingTicketDetail extends App.ControllerModal
+class App.ControllerIntakeShieldPendingTicketDetail extends App.ControllerModal
   @requiredPermission: 'admin.intake_shield'
   buttonClose: true
   buttonCancel: false
@@ -8,12 +8,12 @@ class IntakeShieldPendingTicketDetail extends App.ControllerModal
   content: =>
     App.view('intake_shield/pending_ticket_detail')(record: @record)
 
-class IntakeShieldPendingTickets extends App.ControllerIntakeShieldPendingList
+class App.ControllerIntakeShieldPendingTickets extends App.ControllerIntakeShieldPendingList
   header: __('Spam Tickets')
   apiResource: 'intake_shield_pending_tickets'
   apiActionPrefix: 'intake_shield_pending_tickets'
   listView: 'intake_shield/pending_tickets'
-  detailController: IntakeShieldPendingTicketDetail
+  detailController: App.ControllerIntakeShieldPendingTicketDetail
   executeAllConfirmMessage: __('Really delete all pending tickets immediately via data privacy? This cannot be undone.')
   executeAllSuccessMessage: __('Immediate deletion started for %s tickets.')
 

@@ -1,10 +1,11 @@
-class IntakeShieldFilters extends App.ControllerSubContent
+class App.ControllerIntakeShieldFilters extends App.ControllerSubContent
   @requiredPermission: 'admin.intake_shield'
   header: __('Filters')
 
   @tabKeys: ['whitelist', 'blacklist', 'keywords']
 
   constructor: (params) ->
+    params = App.IntakeShield.useSingleMainEl(params || {})
     super
     @applyParams(params)
     @renderShell()
@@ -53,6 +54,7 @@ class IntakeShieldFilters extends App.ControllerSubContent
         { name: __('Blacklist'), href: '#intake_shield/filters/blacklist', active: @tab is 'blacklist' }
         { name: __('Keywords'),  href: '#intake_shield/filters/keywords',  active: @tab is 'keywords' }
       ]
+      notes: @tabController(@tab)?.notes || []
     )
 
   mountTab: =>
@@ -77,8 +79,8 @@ class IntakeShieldFilters extends App.ControllerSubContent
 
   tabController: (key) ->
     switch key
-      when 'whitelist' then IntakeShieldWhitelist
-      when 'blacklist' then IntakeShieldBlacklist
-      when 'keywords' then IntakeShieldKeyword
+      when 'whitelist' then App.ControllerIntakeShieldWhitelist
+      when 'blacklist' then App.ControllerIntakeShieldBlacklist
+      when 'keywords' then App.ControllerIntakeShieldKeyword
 
-App.Config.set('IntakeShieldFilters', { prio: 100, name: __('Filters'), parent: '#intake_shield', target: '#intake_shield/filters', controller: IntakeShieldFilters, permission: ['admin.intake_shield'] }, 'NavBarAdmin')
+App.Config.set('IntakeShieldFilters', { prio: 100, name: __('Filters'), parent: '#intake_shield', target: '#intake_shield/filters', controller: App.ControllerIntakeShieldFilters, permission: ['admin.intake_shield'] }, 'NavBarAdmin')

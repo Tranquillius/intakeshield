@@ -14,5 +14,3 @@ class App.IntakeShieldWhitelist extends App.Model
     'note',
     'active',
   ]
-
-  @description = __('Trusted e-mail addresses and domains. Matching users receive the configured whitelist role and are never deleted automatically.')

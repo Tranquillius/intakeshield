@@ -14,5 +14,3 @@ class App.IntakeShieldKeyword extends App.Model
     'note',
     'active',
   ]
-
-  @description = __('Spam keywords found in customer tickets raise the spam score.')

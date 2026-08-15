@@ -9,14 +9,14 @@ class IntakeShieldWhitelist extends App.ControllerSubContent
       home: 'intake_shield_whitelists'
       object: __('Whitelist Entry')
       objects: __('Whitelist Entries')
-      pagerBaseUrl: '#intake_shield/whitelist/'
+      pagerBaseUrl: '#intake_shield/filters/whitelist/'
       newButton: __('New Whitelist Entry')
       notes: [
         __('Exact address (user@example.com) or parent domain including subdomains (@example.com, example.com, *@example.com).')
         __('Trusted e-mail addresses and domains. Matching users receive the configured whitelist role and are never deleted automatically.')
+        __('When "Use whitelist for self-registration" is enabled, only matching addresses can sign up.')
       ]
 
   show: (params) =>
     App.IntakeShield.paginateGenericIndex(@, params)
 
-App.Config.set('IntakeShieldWhitelist', { prio: 100, name: __('Whitelist'), parent: '#intake_shield', target: '#intake_shield/whitelist', controller: IntakeShieldWhitelist, permission: ['admin.intake_shield'] }, 'NavBarAdmin')

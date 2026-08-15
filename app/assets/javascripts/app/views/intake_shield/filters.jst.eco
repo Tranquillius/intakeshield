@@ -1,0 +1,16 @@
+<div class="page-header page-header--tabs">
+  <div class="page-header-title">
+    <h1><%- @T('Filters') %> <small><%- @T('IntakeShield') %></small></h1>
+  </div>
+</div>
+
+<div class="page-content">
+  <ul class="nav nav-tabs" role="tablist">
+    <% for tab in @tabs: %>
+      <li class="<% if tab.active: %>active<% end %>">
+        <a href="<%- tab.href %>"><%- @T(tab.name) %></a>
+      </li>
+    <% end %>
+  </ul>
+  <div class="js-tab-body intake-shield-tab-body"></div>
+</div>

@@ -44,7 +44,6 @@ class App.IntakeShieldCaptcha
 
   @inject: (form, data) ->
     form.find('.js-intake-shield-honeypot, .js-intake-shield-captcha').remove()
-    form.removeData('intakeShieldScoreCaptcha')
 
     @insertBeforeControls(form, @honeypotEl(data.honeypot)) if data.honeypot?.field
     @renderCaptcha(form, data.captcha) if data.captcha
@@ -60,21 +59,7 @@ class App.IntakeShieldCaptcha
   @renderCaptcha: (form, captcha) ->
     container = $('<div class="js-intake-shield-captcha"></div>')
     @insertBeforeControls(form, container)
-
-    if captcha.type is 'score'
-      @renderScoreCaptcha(form, container, captcha)
-      return
-
-    if captcha.type is 'altcha'
-      @renderAltcha(container, captcha)
-      return
-
-    @renderWidgetCaptcha(container, captcha)
-
-  @renderScoreCaptcha: (form, container, captcha) ->
-    container.append($("<input type=\"hidden\" name=\"#{captcha.response_field}\">"))
-    form.data('intakeShieldScoreCaptcha', captcha)
-    @loadScript(captcha.script_url, !!captcha.module)
+    @renderAltcha(container, captcha)
 
   @renderAltcha: (container, captcha) ->
     hidden = $("<input type=\"hidden\" name=\"#{captcha.response_field || 'altcha'}\">")
@@ -177,63 +162,12 @@ class App.IntakeShieldCaptcha
     box.find('.js-intake-shield-altcha-label').text(message)
     @showError(container, message)
 
-  @renderWidgetCaptcha: (container, captcha) ->
-    siteKey = captcha.site_key || captcha.sitekey
-    widget = $('<div></div>')
-    widget.addClass(captcha.widget_class) if captcha.widget_class
-    widget.attr('data-sitekey', siteKey) if siteKey
-    container.append(widget)
-
-    if captcha.response_field
-      existing = container.find("[name=\"#{captcha.response_field}\"]")
-      container.append($("<input type=\"hidden\" name=\"#{captcha.response_field}\">")) if !existing.length
-
-    provider = @resolveGlobal(captcha.global)
-    if provider && captcha.widget_instance && typeof provider.WidgetInstance is 'function'
-      new provider.WidgetInstance(widget[0], { sitekey: siteKey, startMode: 'auto' })
-    else if provider && typeof provider.render is 'function'
-      provider.render(widget[0], { sitekey: siteKey })
-    else
-      @loadScript(captcha.script_url, !!captcha.module)
-
   @insertBeforeControls: (form, element) ->
     anchor = form.find('.form-controls, button[type=submit], .submit').first()
     if anchor.length
       element.insertBefore(anchor)
     else
       form.append(element)
-
-  @loadScript: (url, isModule, onload, onerror) ->
-    if !url
-      onload?()
-      return
-    existing = document.querySelector("script[src=\"#{url}\"]")
-    if existing
-      if existing.getAttribute('data-intake-shield-loaded') is '1'
-        onload?()
-      else
-        existing.addEventListener('load', onload) if onload
-        existing.addEventListener('error', onerror) if onerror
-      return
-
-    script = document.createElement('script')
-    script.src = url
-    script.async = true
-    script.defer = true
-    script.type = 'module' if isModule
-    script.addEventListener 'load', ->
-      script.setAttribute('data-intake-shield-loaded', '1')
-      onload?()
-    script.addEventListener 'error', ->
-      onerror?()
-    document.head.appendChild(script)
-
-  @resolveGlobal: (path) ->
-    return if !path
-    current = window
-    for part in path.split('.')
-      current = current?[part]
-    current
 
   @copyWidgetValues: (form) ->
     form.find('altcha-widget').each ->
@@ -300,23 +234,6 @@ class App.IntakeShieldCaptcha
       return if App.User.attributes.indexOf(name) isnt -1
       App.User.attributes.push(name)
 
-  @executeScore: (form, captcha, done) ->
-    provider = @resolveGlobal(captcha.global)
-    if !provider || typeof provider.execute isnt 'function'
-      done()
-      return
-
-    run = ->
-      provider.execute(captcha.site_key || captcha.sitekey, { action: captcha.action || 'submit' }).then((token) ->
-        form.find("[name=\"#{captcha.response_field}\"]").val(token)
-        done()
-      ).catch(-> done())
-
-    if typeof provider.ready is 'function'
-      provider.ready(run)
-    else
-      run()
-
   @patchController: (Klass) ->
     return if !Klass?.prototype?.render
     return if Klass.__intakeShieldCaptchaPatched
@@ -333,15 +250,6 @@ class App.IntakeShieldCaptcha
     Klass::submit = (e) ->
       form = $(e.target).closest('form')
       form = @el.find('form') if !form.length
-      score = form.data('intakeShieldScoreCaptcha')
-      if score && !form.data('intakeShieldScoreReady')
-        e.preventDefault()
-        App.IntakeShieldCaptcha.executeScore form, score, =>
-          form.data('intakeShieldScoreReady', true)
-          originalSubmit.call(@, e)
-          form.removeData('intakeShieldScoreReady')
-        return
-
       App.IntakeShieldCaptcha.copyWidgetValues(form)
       App.IntakeShieldCaptcha.ensureUserAttributes(form)
 

@@ -13,7 +13,7 @@ ActiveSupport::Reloader.to_prepare do
         params:       params,
         current_user: (respond_to?(:current_user, true) ? current_user : nil)
       )
-      return if IntakeShield::SignupCaptcha.verify!(params: params, request: request)
+      return if IntakeShield::SignupCaptcha.verify!(params: params)
 
       raise intake_shield_captcha_error_class, __('Captcha verification failed.')
     end

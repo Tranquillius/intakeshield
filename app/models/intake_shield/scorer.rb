@@ -9,6 +9,7 @@ class IntakeShield::Scorer
     missing_name
     spam_tag
     spam_keyword
+    spam_engine
   ].freeze
 
   SIGNAL_LABELS = {
@@ -19,6 +20,7 @@ class IntakeShield::Scorer
     missing_name:             __('Missing name'),
     spam_tag:                 __('Tagged spam ticket'),
     spam_keyword:             __('Spam keyword'),
+    spam_engine:              __('Spam engine'),
   }.freeze
 
   def self.configured_spam_tag_name
@@ -63,14 +65,22 @@ class IntakeShield::Scorer
   def result
     score = 0
     reasons = []
+    counted_spam_tag = false
     SIGNALS.each do |signal|
       next unless send(:"#{signal}?")
 
       weight = weights[signal.to_s].to_i
       next if weight <= 0
 
+      # Gateway engines often also drive the SPAM tag via a Postmaster filter.
+      # Count only one of the two when both fire.
+      if signal == :spam_engine && counted_spam_tag
+        next
+      end
+
       score += weight
       reasons << "#{SIGNAL_LABELS.fetch(signal)} (+#{weight})"
+      counted_spam_tag = true if signal == :spam_tag
     end
     Result.new(score: score, reasons: reasons)
   end
@@ -124,6 +134,22 @@ class IntakeShield::Scorer
       first_article = ticket.articles.reorder(:id).first
       text = [ticket.title, first_article&.body].compact.join("\n")
       return true if IntakeShield::Keyword.matches_text?(text, keywords)
+    end
+
+    false
+  rescue ActiveRecord::StatementInvalid, NameError
+    false
+  end
+
+  # True when inbound mail was classified as spam by a gateway engine
+  # (SpamAssassin / Rspamd / Microsoft SCL) or a local live check.
+  def spam_engine?
+    return false if IntakeShield::SpamEngine.mode == 'off'
+
+    @user.customer_tickets.find_each do |ticket|
+      ticket.articles.reorder(:id).limit(8).each do |article|
+        return true if IntakeShield::SpamEngine.stamped?(article)
+      end
     end
 
     false

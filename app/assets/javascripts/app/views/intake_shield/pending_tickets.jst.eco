@@ -1,8 +1,4 @@
 <div class="page-header">
-  <div class="page-header-title">
-    <h1><%- @T('Spam Tickets') %> <small><%- @T('IntakeShield') %></small></h1>
-  </div>
-
   <div class="page-header-meta">
     <a class="btn js-refresh"><%- @T('Refresh') %></a>
     <a class="btn btn--primary js-scan"><%- @T('Scan now') %></a>
@@ -12,20 +8,18 @@
   </div>
 </div>
 
-<div class="page-content">
-  <p class="page-description"><%- @T('Tickets carrying the configured spam tag that will be deleted by a data privacy task after the configured delay. The customer account is kept unless that customer is already a spam-user candidate — then user deletion removes the tickets. A background scan runs once per hour; due deletions are executed every 30 minutes. Use "Scan now" to run the scan immediately.') %></p>
+<p class="page-description"><%- @T('Tickets carrying the configured spam tag that will be deleted by a data privacy task after the configured delay. The customer account is kept unless that customer is already a spam-user candidate — then user deletion removes the tickets. A background scan runs once per hour; due deletions are executed every 30 minutes. Use "Scan now" to run the scan immediately.') %></p>
 
-  <%- App.view('intake_shield/_pending_tickets_scan_stats')(scan_stats: @scan_stats) %>
+<%- App.view('intake_shield/_pending_tickets_scan_stats')(scan_stats: @scan_stats) %>
 
-  <% if _.isEmpty(@records): %>
-    <p><%- @T('No tickets are currently scheduled for deletion.') %></p>
-  <% else: %>
-    <div class="js-table-pending"></div>
-  <% end %>
+<% if _.isEmpty(@records): %>
+  <p><%- @T('No tickets are currently scheduled for deletion.') %></p>
+<% else: %>
+  <div class="js-table-pending"></div>
+<% end %>
 
-  <% if !_.isEmpty(@failed): %>
-    <div class="spacer"></div>
-    <h2><%- @T('Failed deletions') %></h2>
-    <div class="js-table-failed"></div>
-  <% end %>
-</div>
+<% if !_.isEmpty(@failed): %>
+  <div class="spacer"></div>
+  <h2><%- @T('Failed deletions') %></h2>
+  <div class="js-table-failed"></div>
+<% end %>

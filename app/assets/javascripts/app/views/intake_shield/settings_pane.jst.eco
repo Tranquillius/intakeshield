@@ -1,0 +1,12 @@
+<% for section, index in @sections: %>
+  <% if index > 0: %>
+    <div class="spacer"></div>
+  <% end %>
+  <% if section.heading: %>
+    <h2><%- @T(section.heading) %></h2>
+  <% end %>
+  <% if section.description: %>
+    <p class="page-description"><%- @T(section.description) %></p>
+  <% end %>
+  <div class="js-settings-section" data-section="<%= index %>"></div>
+<% end %>

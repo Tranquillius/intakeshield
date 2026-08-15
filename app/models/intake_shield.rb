@@ -43,6 +43,19 @@ module IntakeShield
       IntakeShield::Whitelist.matches?(email)
     end
 
+    # How inbound mail from blacklisted domains is handled. Independent of the
+    # master switch. Values: off, all, new_only.
+    def drop_blacklisted_mail_mode
+      value = Setting.get('intake_shield_drop_blacklisted_mail').to_s.strip
+      return value if %w[all new_only].include?(value)
+
+      'off'
+    end
+
+    def drop_blacklisted_mail?
+      drop_blacklisted_mail_mode != 'off'
+    end
+
     # Assigns the configured whitelist role to the given user when the
     # e-mail address matches an active whitelist entry. Optionally removes
     # roles listed in intake_shield_whitelist_remove_role_ids (e.g. "Neu").
@@ -71,13 +84,14 @@ module IntakeShield
       return stats.merge(error: 'inactive') if !active?
 
       spam_tag_mode = prefer_spam_tag_user_scan?
+      spam_engine_mode = prefer_spam_engine_user_scan?
       blacklist_mode = prefer_disposable_domain_scan?
       role = candidate_role
-      if !spam_tag_mode && !blacklist_mode && role.blank?
+      if !spam_tag_mode && !spam_engine_mode && !blacklist_mode && role.blank?
         return stats.merge(error: 'candidate_role_missing')
       end
 
-      relaxed_note = [spam_tag_mode && 'spam_tag', blacklist_mode && 'blacklist'].select { |part| part }.join('+')
+      relaxed_note = [spam_tag_mode && 'spam_tag', spam_engine_mode && 'spam_engine', blacklist_mode && 'blacklist'].select { |part| part }.join('+')
       stats[:candidate_role] = if relaxed_note.present?
                                  "#{role&.name || '-'} (ignored in #{relaxed_note} mode)"
                                else
@@ -88,7 +102,7 @@ module IntakeShield
       stats[:min_age_days] = min_age_days
       stats[:max_age_days] = max_age_days
       stats[:max_ticket_count] = max_ticket_count
-      stats[:scan_mode] = [spam_tag_mode && 'spam_tag', blacklist_mode && 'blacklist', 'full'].select { |part| part }.join('+')
+      stats[:scan_mode] = [spam_tag_mode && 'spam_tag', spam_engine_mode && 'spam_engine', blacklist_mode && 'blacklist', 'full'].select { |part| part }.join('+')
 
       logger.info "Starting cleanup scan (role=#{role&.name}, mode=#{stats[:scan_mode]}, scoring=#{scoring_enabled?}, threshold=#{score_threshold})"
       cancel_pending_for_whitelisted
@@ -204,7 +218,8 @@ module IntakeShield
 
       role = candidate_role
       in_spam_tag_pass = prefer_spam_tag_user_scan? && spam_tagged_customer_ids.include?(user.id)
-      skip = deletion_skip_reason(user, role, spam_tag_mode: in_spam_tag_pass)
+      in_spam_engine_pass = prefer_spam_engine_user_scan? && IntakeShield::SpamEngine.customer_ids.include?(user.id)
+      skip = deletion_skip_reason(user, role, spam_tag_mode: in_spam_tag_pass || in_spam_engine_pass)
       score_result = scoring_enabled? ? IntakeShield::Scorer.new(user).result : nil
       domain = user.email.to_s.split('@', 2).last.to_s.downcase
 
@@ -213,6 +228,8 @@ module IntakeShield
         email:                         user.email,
         domain:                        domain,
         active:                        active?,
+        drop_blacklisted_mail:         drop_blacklisted_mail_mode,
+        spam_engine:                   IntakeShield::SpamEngine.mode,
         created_at:                    user.created_at,
         min_age_days:                  min_age_days,
         max_age_days:                  max_age_days,
@@ -230,15 +247,17 @@ module IntakeShield
         whitelist_patterns:            IntakeShield::Whitelist.active.order(:pattern).pluck(:pattern),
         privileged:                    privileged_user?(user),
         prefer_spam_tag_scan:          prefer_spam_tag_user_scan?,
+        prefer_spam_engine_scan:       prefer_spam_engine_user_scan?,
         prefer_disposable_domain_scan: prefer_disposable_domain_scan?,
         disposable_domain_relaxed:     disposable_domain_relaxed?(user),
         in_spam_tag_pass:              in_spam_tag_pass,
+        in_spam_engine_pass:           in_spam_engine_pass,
         skip_reason:                   skip,
         score:                         score_result&.score,
         score_reasons:                 score_result&.reasons,
         pending_deletion:              IntakeShield::PendingDeletion.exists_for?(user),
         pending_user_deletion:         pending_user_deletion?(user),
-        covers_ticket_deletion:        user_deletion_covers_ticket?(user, spam_tag_mode: in_spam_tag_pass),
+        covers_ticket_deletion:        user_deletion_covers_ticket?(user, spam_tag_mode: in_spam_tag_pass || in_spam_engine_pass),
         would_schedule:                skip.nil? && !IntakeShield::PendingDeletion.exists_for?(user) && (
                                          !scoring_enabled? || (score_result && score_result.score >= score_threshold)
                                        ),
@@ -306,6 +325,17 @@ module IntakeShield
         end
       end
 
+      if prefer_spam_engine_user_scan?
+        ids = IntakeShield::SpamEngine.customer_ids
+        logger.info "Spam-engine pass targeting #{ids.size} customer(s)"
+        User.where(id: ids).includes(:roles).order(:id).find_each do |user|
+          next if seen_ids[user.id]
+
+          seen_ids[user.id] = true
+          yield user, true
+        end
+      end
+
       logger.info 'Full age-based scan pass'
       scope = User.where('created_at < ?', min_age_days.days.ago)
       scope = scope.where('created_at > ?', max_age_days.days.ago) if max_age_days.positive?
@@ -323,6 +353,15 @@ module IntakeShield
       spam_tag_weight >= score_threshold
     end
 
+    # When spam_engine alone reaches the threshold, engine-stamped senders
+    # skip candidate-role and ticket-count filters (like spam-tag mode).
+    def prefer_spam_engine_user_scan?
+      return false if !scoring_enabled?
+      return false if IntakeShield::SpamEngine.mode == 'off'
+
+      spam_engine_weight >= score_threshold
+    end
+
     # When disposable_domain alone reaches the threshold, blacklisted addresses
     # are treated like spam-tag hits: candidate role and ticket-count limits
     # are ignored (whitelist / privileged / age filters still apply).
@@ -338,6 +377,10 @@ module IntakeShield
 
     def spam_tag_weight
       IntakeShield::Scorer.score_weights['spam_tag'].to_i
+    end
+
+    def spam_engine_weight
+      IntakeShield::Scorer.score_weights['spam_engine'].to_i
     end
 
     def disposable_domain_weight
@@ -429,7 +472,7 @@ module IntakeShield
     # qualifies as a spam user (so the later user scan/deletion keeps the
     # tickets attached). Cancelled user entries are not treated as coverage,
     # so ticket-only cleanup can still run.
-    def user_deletion_covers_ticket?(user, spam_tag_mode: prefer_spam_tag_user_scan?)
+    def user_deletion_covers_ticket?(user, spam_tag_mode: prefer_spam_tag_user_scan? || prefer_spam_engine_user_scan?)
       return false if user.blank?
       return true if pending_user_deletion?(user)
       return true if data_privacy_task_running_for?(user)
@@ -616,9 +659,9 @@ module IntakeShield
       end
     end
 
-    # Hard filters before scoring. In spam_tag mode (or when a blacklisted
-    # domain alone meets the score threshold) the candidate role and
-    # ticket-count limits are ignored; admin/agent accounts stay protected.
+    # Hard filters before scoring. In spam_tag / spam_engine mode (or when a
+    # blacklisted domain alone meets the score threshold) the candidate role
+    # and ticket-count limits are ignored; admin/agent accounts stay protected.
     def deletion_skip_reason(user, role, spam_tag_mode: prefer_spam_tag_user_scan?)
       return :skipped_system_user if user.id == 1
       return :skipped_no_email if user.email.blank?
@@ -659,7 +702,7 @@ module IntakeShield
       return pending_deletion.cancel!('privileged user') if privileged_user?(user)
       return pending_deletion.mark_executed! if data_privacy_task_running_for?(user)
 
-      if !prefer_spam_tag_user_scan? && !disposable_domain_relaxed?(user)
+      if !prefer_spam_tag_user_scan? && !prefer_spam_engine_user_scan? && !disposable_domain_relaxed?(user)
         role = candidate_role
         return pending_deletion.cancel!('candidate role missing') if role.blank?
         return pending_deletion.cancel!('roles changed') if !user.role_ids.include?(role.id)

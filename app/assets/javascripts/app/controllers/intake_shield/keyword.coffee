@@ -9,7 +9,7 @@ class IntakeShieldKeyword extends App.ControllerSubContent
       home: 'intake_shield_keywords'
       object: __('Keyword')
       objects: __('Keywords')
-      pagerBaseUrl: '#intake_shield/keywords/'
+      pagerBaseUrl: '#intake_shield/filters/keywords/'
       newButton: __('New Keyword')
       notes: [
         __('Case-insensitive match in ticket title and first article body. Raises the spam score.')
@@ -19,4 +19,3 @@ class IntakeShieldKeyword extends App.ControllerSubContent
   show: (params) =>
     App.IntakeShield.paginateGenericIndex(@, params)
 
-App.Config.set('IntakeShieldKeyword', { prio: 160, name: __('Keywords'), parent: '#intake_shield', target: '#intake_shield/keywords', controller: IntakeShieldKeyword, permission: ['admin.intake_shield'] }, 'NavBarAdmin')

@@ -2,6 +2,22 @@
 
 Package versions are also recorded in `intake_shield.szpm`.
 
+## 0.8.0 — 2026-08-15
+
+Group the admin UI into Filters (Whitelist / Blacklist / Keywords), Spam (Users / Tickets), and Settings tabs, matching Zammad's Knowledge Base pattern. The master switch is the Settings header toggle.
+
+## 0.7.0 — 2026-08-15
+
+Optional switch to use the whitelist as an allow list for self-registration. Addresses that do not match are rejected with a clear error on classic signup and GraphQL `userSignup`. Independent of the master switch; admin/agent creation, mail auto-create, and LDAP are unchanged.
+
+## 0.6.0 — 2026-08-15
+
+Optional scoring from gateway spam headers (SpamAssassin, Rspamd, Microsoft SCL) or a local daemon. IntakeShield does not ship those engines. The `spam_engine` weight is skipped when the ticket already carries the configured spam tag.
+
+## 0.5.0 — 2026-08-15
+
+Optional inbound drop of mail from blacklist domains before Zammad creates a user or ticket. Choose off, all mail, or only mail that would create a new user or ticket. The original message still follows the e-mail channel option to keep or delete mail on the server. Signup CAPTCHA always uses self-hosted ALTCHA (the form-channel source option is removed).
+
 ## 0.4.3 — 2026-08-14
 
 Solve the signup CAPTCHA on the main thread. Zammad's CSP blocks ALTCHA's blob/data Web Workers, which left the widget retrying challenges forever.

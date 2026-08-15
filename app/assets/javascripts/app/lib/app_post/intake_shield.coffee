@@ -24,32 +24,39 @@ App.IntakeShield =
 
   # Factory for Whitelist / Blacklist / Keyword generic index pages.
   mountGenericIndex: (controller, options) ->
+    el = $(options.el || controller.el)
+    page = parseInt(controller.page, 10) || 1
+    controller.page = page
     controller.genericController = new App.ControllerGenericIndex(
-      el: controller.el
+      el: el
       id: controller.id
       genericObject: options.genericObject
       defaultSortBy: 'pattern'
+      searchQuery: controller.searchQuery || controller.search_query || ''
       pageData:
         home: options.home
         object: options.object
         objects: options.objects
         pagerAjax: true
         pagerBaseUrl: options.pagerBaseUrl
-        pagerSelected: (controller.page || 1)
+        pagerSelected: page
         pagerPerPage: 150
         navupdate: '#intake_shield'
         notes: options.notes
         buttons: [
           { name: options.newButton, 'data-type': 'new', class: 'btn--success' }
         ]
-      container: controller.el.closest('.content')
+      container: el.closest('.content')
     )
 
   paginateGenericIndex: (controller, params) ->
     for key, value of params
       if key isnt 'el' && key isnt 'shown' && key isnt 'match'
         controller[key] = value
-    controller.genericController.paginate(controller.page || 1)
+    page = parseInt(controller.page, 10) || 1
+    controller.page = page
+    search_query = controller.search_query || controller.searchQuery || ''
+    controller.genericController.paginate(page, search_query: search_query)
 
   # Shared ControllerTable wrapper for pending list pages.
   renderTable: (controller, options) ->

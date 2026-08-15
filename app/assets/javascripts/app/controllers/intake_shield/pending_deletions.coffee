@@ -97,4 +97,3 @@ class IntakeShieldPendingDeletions extends App.ControllerIntakeShieldPendingList
     App.IntakeShield.confirmAction @, __('Really add this user to the whitelist and cancel the deletion?'), =>
       App.IntakeShield.performMemberAction(@, id, 'whitelist', __('User added to whitelist.'))
 
-App.Config.set('IntakeShieldPendingDeletions', { prio: 200, name: __('Spam Users'), parent: '#intake_shield', target: '#intake_shield/pending_deletions', controller: IntakeShieldPendingDeletions, permission: ['admin.intake_shield'] }, 'NavBarAdmin')

@@ -92,4 +92,3 @@ class IntakeShieldPendingTickets extends App.ControllerIntakeShieldPendingList
     App.IntakeShield.confirmAction @, __('Really delete this ticket immediately via data privacy? This cannot be undone.'), =>
       App.IntakeShield.performMemberAction(@, id, 'execute', __('Ticket deletion started.'))
 
-App.Config.set('IntakeShieldPendingTickets', { prio: 250, name: __('Spam Tickets'), parent: '#intake_shield', target: '#intake_shield/pending_tickets', controller: IntakeShieldPendingTickets, permission: ['admin.intake_shield'] }, 'NavBarAdmin')

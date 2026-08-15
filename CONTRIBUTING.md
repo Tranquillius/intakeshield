@@ -16,7 +16,7 @@ export DEVELOPMENT_FILE_WATCHER="file_update_checker"
 Build a distributable package (writes `releases/`, which is gitignored):
 
 ```bash
-bin/build 0.4.3
+bin/build 0.6.0
 ```
 
 Do not commit `.zpm` files, `tmp/`, logs, or data from a live Zammad instance.
@@ -32,7 +32,7 @@ Do not commit `.zpm` files, `tmp/`, logs, or data from a live Zammad instance.
 ## Releases
 
 1. Bump `version` and `change_log` in `intake_shield.szpm` and [CHANGELOG.md](CHANGELOG.md).
-2. Tag `v<version>` on the GitHub `main` branch (for example `v0.4.3`).
+2. Tag `v<version>` on the GitHub `main` branch (for example `v0.5.0`).
 3. The [release workflow](.github/workflows/release.yml) builds the `.zpm` and attaches it to a GitHub Release.
 
 You can also run `bin/build <version>` locally and attach the file by hand.

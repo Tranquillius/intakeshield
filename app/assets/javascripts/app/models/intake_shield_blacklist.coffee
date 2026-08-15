@@ -15,4 +15,4 @@ class App.IntakeShieldBlacklist extends App.Model
     'active',
   ]
 
-  @description = __('Disposable or otherwise untrusted domains. Matching addresses raise the spam score. Domains of deleted spam users are added automatically.')
+  @description = __('Disposable or otherwise untrusted domains. Matching addresses raise the spam score. When inbound drop is enabled, mail from these domains is not turned into users or tickets. Domains of deleted spam users are added automatically.')

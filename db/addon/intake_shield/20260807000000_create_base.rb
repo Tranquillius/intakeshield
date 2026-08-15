@@ -356,11 +356,44 @@ class CreateBase < ActiveRecord::Migration[7.0]
           'missing_name'             => 10,
           'spam_tag'                 => 50,
           'spam_keyword'             => 50,
+          'spam_engine'              => 50,
         }
       ),
       frontend:    true
     )
     create_signup_captcha_settings
+    create_drop_blacklisted_mail_settings
+    create_spam_engine_settings
+    create_whitelist_signup_settings
+  end
+
+  def self.create_whitelist_signup_settings
+    Setting.create_if_not_exists(
+      title:       __('Use whitelist for self-registration'),
+      name:        'intake_shield_whitelist_signup',
+      area:        'IntakeShield::Whitelist',
+      description: __('When enabled, self-registration is allowed only for e-mail addresses that match an existing whitelist entry. Independent of the master switch. Does not apply to admin/agent user creation, mail auto-create, or LDAP. An empty whitelist blocks all self-registration.'),
+      options:     {
+        form: [
+          {
+            display: '',
+            null:    true,
+            name:    'intake_shield_whitelist_signup',
+            tag:     'boolean',
+            options: {
+              true  => 'yes',
+              false => 'no',
+            },
+          },
+        ],
+      },
+      preferences: {
+        prio:       1120,
+        permission: ['admin.intake_shield'],
+      },
+      state:       false,
+      frontend:    true
+    )
   end
 
   def self.create_signup_captcha_settings
@@ -390,31 +423,212 @@ class CreateBase < ActiveRecord::Migration[7.0]
       state:       false,
       frontend:    true
     )
+  end
+
+  POSTMASTER_FILTER_SETTING_NAMES = %w[
+    0013_postmaster_filter_intake_shield_blacklist
+    0105_postmaster_filter_intake_shield_blacklist_followup
+    5405_postmaster_filter_intake_shield_spam_engine
+  ].freeze
+
+  def self.create_drop_blacklisted_mail_settings
     Setting.create_if_not_exists(
-      title:       __('Captcha Source'),
-      name:        'intake_shield_captcha_source',
-      area:        'IntakeShield::Captcha',
-      description: __('ALTCHA is self-hosted and needs no keys. Form channel reuses the CAPTCHA already configured under Channels → Form.'),
+      title:       __('Drop blacklisted mail'),
+      name:        'intake_shield_drop_blacklisted_mail',
+      area:        'IntakeShield::Blacklist',
+      description: __('Do not create users or tickets from blacklisted sender domains. The original message still follows the e-mail channel option to keep or delete mail on the server. Independent of the master switch.'),
       options:     {
         form: [
           {
             display: '',
             null:    false,
-            name:    'intake_shield_captcha_source',
+            name:    'intake_shield_drop_blacklisted_mail',
             tag:     'select',
             options: {
-              'altcha'       => 'ALTCHA (self-hosted)',
-              'form_channel' => 'Form channel',
+              'off'      => 'No',
+              'all'      => 'All mail from blacklisted domains',
+              'new_only' => 'Only mail that would create a new user or ticket',
             },
           },
         ],
       },
       preferences: {
-        prio:       2010,
+        prio:       1500,
         permission: ['admin.intake_shield'],
       },
-      state:       'altcha',
+      state:       'off',
       frontend:    true
+    )
+    Setting.create_if_not_exists(
+      title:       __('Defines postmaster filter.'),
+      name:        '0013_postmaster_filter_intake_shield_blacklist',
+      area:        'Postmaster::PreFilter',
+      description: __('Defines postmaster filter to drop inbound mail from IntakeShield blacklist domains before user identification.'),
+      options:     {},
+      state:       'Channel::Filter::IntakeShieldBlacklist',
+      frontend:    false
+    )
+    Setting.create_if_not_exists(
+      title:       __('Defines postmaster filter.'),
+      name:        '0105_postmaster_filter_intake_shield_blacklist_followup',
+      area:        'Postmaster::PreFilter',
+      description: __('Defines postmaster filter to drop new tickets from known senders on IntakeShield blacklist domains after follow-up detection.'),
+      options:     {},
+      state:       'Channel::Filter::IntakeShieldBlacklist',
+      frontend:    false
+    )
+  end
+
+  def self.create_spam_engine_settings
+    Setting.create_if_not_exists(
+      title:       __('Spam engine'),
+      name:        'intake_shield_spam_engine',
+      area:        'IntakeShield::SpamEngine',
+      description: __('Use gateway spam headers (SpamAssassin, Rspamd, Microsoft SCL) as a scoring signal. IntakeShield does not ship or embed those engines. Independent of the master switch. Live mode talks to a local daemon only when headers are missing; failures are ignored.'),
+      options:     {
+        form: [
+          {
+            display: '',
+            null:    false,
+            name:    'intake_shield_spam_engine',
+            tag:     'select',
+            options: {
+              'off'     => 'Off',
+              'headers' => 'Gateway headers',
+              'live'    => 'Gateway headers, then local daemon',
+            },
+          },
+        ],
+      },
+      preferences: {
+        prio:       1900,
+        permission: ['admin.intake_shield'],
+      },
+      state:       'off',
+      frontend:    true
+    )
+    Setting.create_if_not_exists(
+      title:       __('Spam engine backend'),
+      name:        'intake_shield_spam_engine_backend',
+      area:        'IntakeShield::SpamEngine',
+      description: __('Local daemon for live mode. SpamAssassin uses spamd (default port 783). Rspamd uses the HTTP scan worker (default port 11333). Install the daemon yourself; this package only speaks the protocol.'),
+      options:     {
+        form: [
+          {
+            display: '',
+            null:    false,
+            name:    'intake_shield_spam_engine_backend',
+            tag:     'select',
+            options: {
+              'spamassassin' => 'SpamAssassin',
+              'rspamd'       => 'Rspamd',
+            },
+          },
+        ],
+      },
+      preferences: {
+        prio:       1910,
+        permission: ['admin.intake_shield'],
+      },
+      state:       'spamassassin',
+      frontend:    true
+    )
+    Setting.create_if_not_exists(
+      title:       __('Spam engine host'),
+      name:        'intake_shield_spam_engine_host',
+      area:        'IntakeShield::SpamEngine',
+      description: __('Host of the local spam daemon for live mode. Prefer 127.0.0.1 so mail content does not leave the Zammad host.'),
+      options:     {
+        form: [
+          {
+            display: '',
+            null:    false,
+            name:    'intake_shield_spam_engine_host',
+            tag:     'input',
+          },
+        ],
+      },
+      preferences: {
+        prio:       1920,
+        permission: ['admin.intake_shield'],
+      },
+      state:       '127.0.0.1',
+      frontend:    true
+    )
+    Setting.create_if_not_exists(
+      title:       __('Spam engine port'),
+      name:        'intake_shield_spam_engine_port',
+      area:        'IntakeShield::SpamEngine',
+      description: __('TCP port of the local spam daemon for live mode. 783 for SpamAssassin spamd, 11333 for the Rspamd scan worker (11334 is the controller).'),
+      options:     {
+        form: [
+          {
+            display: '',
+            null:    false,
+            name:    'intake_shield_spam_engine_port',
+            tag:     'input',
+          },
+        ],
+      },
+      preferences: {
+        prio:       1930,
+        permission: ['admin.intake_shield'],
+      },
+      state:       783,
+      frontend:    true
+    )
+    Setting.create_if_not_exists(
+      title:       __('Spam engine timeout (seconds)'),
+      name:        'intake_shield_spam_engine_timeout',
+      area:        'IntakeShield::SpamEngine',
+      description: __('How long to wait for the local daemon in live mode. Timeouts and connection errors are ignored (fail-open).'),
+      options:     {
+        form: [
+          {
+            display: '',
+            null:    false,
+            name:    'intake_shield_spam_engine_timeout',
+            tag:     'input',
+          },
+        ],
+      },
+      preferences: {
+        prio:       1940,
+        permission: ['admin.intake_shield'],
+      },
+      state:       2,
+      frontend:    true
+    )
+    Setting.create_if_not_exists(
+      title:       __('Spam engine password'),
+      name:        'intake_shield_spam_engine_password',
+      area:        'IntakeShield::SpamEngine',
+      description: __('Optional Rspamd controller/worker password for live mode. Leave empty when the local scan socket needs no password.'),
+      options:     {
+        form: [
+          {
+            display: '',
+            null:    true,
+            name:    'intake_shield_spam_engine_password',
+            tag:     'input',
+          },
+        ],
+      },
+      preferences: {
+        prio:       1950,
+        permission: ['admin.intake_shield'],
+      },
+      state:       '',
+      frontend:    true
+    )
+    Setting.create_if_not_exists(
+      title:       __('Defines postmaster filter.'),
+      name:        '5405_postmaster_filter_intake_shield_spam_engine',
+      area:        'Postmaster::PostFilter',
+      description: __('Defines postmaster filter to record IntakeShield spam-engine verdicts on inbound articles.'),
+      options:     {},
+      state:       'Channel::Filter::IntakeShieldSpamEngine',
+      frontend:    false
     )
   end
 
@@ -432,6 +646,7 @@ class CreateBase < ActiveRecord::Migration[7.0]
 
   def self.remove_settings
     Setting.where('name LIKE ?', 'intake_shield_%').destroy_all
+    Setting.where(name: POSTMASTER_FILTER_SETTING_NAMES).destroy_all
   end
 
   def self.create_permission

@@ -1,3 +1,12 @@
+# Map pre-tab hash URLs onto the grouped sidebar targets so bookmarks and
+# ControllerNavSidebar highlighting (`/#{target}$`) keep working.
+IntakeShieldLegacyTargets =
+  whitelist:         { target: 'filters', tab: 'whitelist' }
+  blacklist:         { target: 'filters', tab: 'blacklist' }
+  keywords:          { target: 'filters', tab: 'keywords' }
+  pending_deletions: { target: 'spam',    tab: 'users' }
+  pending_tickets:   { target: 'spam',    tab: 'tickets' }
+
 class IntakeShieldRouter extends App.ControllerPermanent
   @requiredPermission: ['admin.intake_shield']
 
@@ -11,13 +20,28 @@ class IntakeShieldRouter extends App.ControllerPermanent
     App.TaskManager.execute(
       key:        'Manage'
       controller: 'Manage'
-      params:     params
+      params:     @normalizeParams(params)
       show:       true
       persistent: true
     )
 
+  normalizeParams: (params) ->
+    params = _.extend({}, params)
+    if params.search_query
+      params.search_query = decodeURIComponent(params.search_query)
+
+    mapped = IntakeShieldLegacyTargets[params.target]
+    if mapped
+      params.tab = mapped.tab
+      params.target = mapped.target
+    params
+
+# More specific routes last so Spine matches them first (unshift).
 App.Config.set('intake_shield/:target', IntakeShieldRouter, 'Routes')
 App.Config.set('intake_shield/:target/:page', IntakeShieldRouter, 'Routes')
+App.Config.set('intake_shield/:target/:page/:search_query', IntakeShieldRouter, 'Routes')
+App.Config.set('intake_shield/:target/:tab/:page', IntakeShieldRouter, 'Routes')
+App.Config.set('intake_shield/:target/:tab/:page/:search_query', IntakeShieldRouter, 'Routes')
 
 App.Config.set('IntakeShield', { prio: 2600, name: __('IntakeShield'), target: '#intake_shield', permission: ['admin.intake_shield'] }, 'NavBarAdmin')
 
@@ -99,6 +123,26 @@ do ->
       flex: 0 0 auto;
       width: 1.1rem;
       text-align: center;
+    }
+    .intake-shield-tab-body > .page-header .page-header-title {
+      display: none;
+    }
+    .intake-shield-tab-body > .page-header {
+      min-height: 0;
+      background: transparent;
+      border: 0;
+      padding-top: 0.5rem;
+    }
+    .intake-shield-tab-body > .page-content {
+      padding-left: 0;
+      padding-right: 0;
+      padding-top: 0;
+    }
+    .tab-content > .tab-pane > .page-header {
+      min-height: 0;
+      background: transparent;
+      border: 0;
+      padding-top: 0.75rem;
     }
   '''
   document.head.appendChild(style)

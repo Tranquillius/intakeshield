@@ -1,6 +1,6 @@
 {
   "name": "IntakeShield",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "vendor": "IntakeShield",
   "license": "GNU Affero General Public License v3.0 (AGPL-3.0)",
   "url": "https://github.com/Tranquillius/intakeshield",
@@ -84,16 +84,21 @@
       "version": "0.8.2",
       "date": "2026-08-15 12:52:00 UTC",
       "log": "Show Filters and Spam help text under the nav tabs. Label the Settings master switch separately from the page heading."
+    },
+    {
+      "version": "0.9.0",
+      "date": "2026-09-04 00:00:00 UTC",
+      "log": "Add Mark as spam to the classic Manage Users action menu. That blacklists the user's e-mail domain; matching accounts are queued by the spam-user scan."
     }
   ],
   "description": [
     {
       "language": "en",
-      "text": "E-mail whitelist rules, optional signup allow list, inbound blacklist drop, optional gateway spam-engine scoring, signup CAPTCHA, and automated data privacy cleanup of spam users."
+      "text": "E-mail whitelist rules, optional signup allow list, inbound blacklist drop, optional gateway spam-engine scoring, signup CAPTCHA, mark-as-spam from Manage Users, and automated data privacy cleanup of spam users."
     },
     {
       "language": "de",
-      "text": "E-Mail-Whitelist-Regeln, optionale Allow-Liste für die Selbstregistrierung, Verwerfen eingehender Blacklist-Mails, optionales Scoring über Gateway-Spam-Engines, Registrierungs-Captcha und automatisierte Data-Privacy-Bereinigung von Spam-Benutzern."
+      "text": "E-Mail-Whitelist-Regeln, optionale Allow-Liste für die Selbstregistrierung, Verwerfen eingehender Blacklist-Mails, optionales Scoring über Gateway-Spam-Engines, Registrierungs-Captcha, Als-Spam-markieren in Manage Users und automatisierte Data-Privacy-Bereinigung von Spam-Benutzern."
     }
   ],
   "files": [
@@ -143,6 +148,10 @@
     },
     {
       "location": "app/assets/javascripts/app/lib/app_post/intake_shield_captcha.coffee",
+      "permission": 644
+    },
+    {
+      "location": "app/assets/javascripts/app/lib/app_post/intake_shield_user_actions.coffee",
       "permission": 644
     },
     {
@@ -215,6 +224,10 @@
     },
     {
       "location": "app/controllers/intake_shield_pending_tickets_controller.rb",
+      "permission": 644
+    },
+    {
+      "location": "app/controllers/intake_shield_users_controller.rb",
       "permission": 644
     },
     {
@@ -326,6 +339,10 @@
       "permission": 644
     },
     {
+      "location": "app/policies/controllers/intake_shield_users_controller_policy.rb",
+      "permission": 644
+    },
+    {
       "location": "app/policies/controllers/intake_shield_whitelists_controller_policy.rb",
       "permission": 644
     },
@@ -427,6 +444,10 @@
     },
     {
       "location": "db/addon/intake_shield/20260815000004_sync_gui_tabs_translations.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20260904000000_add_mark_spam_user_action.rb",
       "permission": 644
     },
     {

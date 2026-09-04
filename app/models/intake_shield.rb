@@ -83,26 +83,8 @@ module IntakeShield
       stats = empty_scan_stats
       return stats.merge(error: 'inactive') if !active?
 
-      spam_tag_mode = prefer_spam_tag_user_scan?
-      spam_engine_mode = prefer_spam_engine_user_scan?
-      blacklist_mode = prefer_disposable_domain_scan?
-      role = candidate_role
-      if !spam_tag_mode && !spam_engine_mode && !blacklist_mode && role.blank?
-        return stats.merge(error: 'candidate_role_missing')
-      end
-
-      relaxed_note = [spam_tag_mode && 'spam_tag', spam_engine_mode && 'spam_engine', blacklist_mode && 'blacklist'].select { |part| part }.join('+')
-      stats[:candidate_role] = if relaxed_note.present?
-                                 "#{role&.name || '-'} (ignored in #{relaxed_note} mode)"
-                               else
-                                 role.name
-                               end
-      stats[:scoring_enabled] = scoring_enabled?
-      stats[:score_threshold] = score_threshold
-      stats[:min_age_days] = min_age_days
-      stats[:max_age_days] = max_age_days
-      stats[:max_ticket_count] = max_ticket_count
-      stats[:scan_mode] = [spam_tag_mode && 'spam_tag', spam_engine_mode && 'spam_engine', blacklist_mode && 'blacklist', 'full'].select { |part| part }.join('+')
+      role = prepare_scan_stats!(stats)
+      return stats if stats[:error]
 
       logger.info "Starting cleanup scan (role=#{role&.name}, mode=#{stats[:scan_mode]}, scoring=#{scoring_enabled?}, threshold=#{score_threshold})"
       cancel_pending_for_whitelisted
@@ -115,6 +97,56 @@ module IntakeShield
       end
       logger.info "Finished cleanup scan (#{stats.inspect})"
       stats
+    end
+
+    # Adds the user's e-mail host to the blacklist. When the master switch is
+    # on, matching accounts are scanned with the same rules as cleanup_scan.
+    def mark_spam_domain_from_user!(user, by:)
+      return mark_spam_error('user_not_found') if user.blank?
+      return mark_spam_error('system_user') if user.id == 1
+      return mark_spam_error('no_email') if user.email.blank?
+      return mark_spam_error('privileged') if privileged_user?(user)
+
+      domain = user_email_domain(user)
+      return mark_spam_error('no_email') if domain.blank?
+      return mark_spam_error('never_disposable', domain: domain) if IntakeShield::NeverDisposable.domain?(domain)
+
+      normalized = IntakeShield::Blacklist.normalize_pattern_value(domain)
+      existing = IntakeShield::Blacklist.find_by(['LOWER(pattern) = ?', normalized])
+      already_listed = existing&.active? || false
+
+      entry = IntakeShield::Blacklist.remember_domain!(
+        domain,
+        note:       format(__('Manually marked as spam by %s'), by.respond_to?(:login) ? by.login : by.to_s),
+        by:         by,
+        reactivate: true,
+      )
+      if !already_listed && entry.blank?
+        return mark_spam_error('never_disposable', domain: domain)
+      end
+
+      actor_login = by.respond_to?(:login) ? by.login : by.to_s
+      if already_listed
+        logger.info "Blacklist domain '#{domain}' already listed (manual mark by #{actor_login} for user ##{user.id})"
+      else
+        logger.info "Blacklisted domain '#{domain}' from user ##{user.id} (#{user.email}) by #{actor_login}"
+      end
+
+      scan_scheduled = false
+      scan_stats = nil
+      if active?
+        scan_stats = cleanup_scan_for_domain(domain)
+        scan_scheduled = true
+      end
+
+      {
+        success:         true,
+        domain:          domain,
+        blacklist_added: !already_listed,
+        already_listed:  already_listed,
+        scan_scheduled:  scan_scheduled,
+        scan_stats:      scan_stats,
+      }
     end
 
     # Immediately creates the data privacy task for a pending deletion.
@@ -265,6 +297,109 @@ module IntakeShield
     end
 
     private
+
+    def mark_spam_error(code, domain: nil)
+      {
+        success:     false,
+        error:       code,
+        error_human: mark_spam_error_human(code),
+        domain:      domain,
+      }
+    end
+
+    def mark_spam_error_human(code)
+      case code
+      when 'user_not_found'
+        __('User could not be found.')
+      when 'system_user'
+        __('The system user cannot be marked as spam.')
+      when 'no_email'
+        __('This user has no e-mail address.')
+      when 'privileged'
+        __('Agents and admins cannot be marked as spam.')
+      when 'never_disposable'
+        __('This e-mail domain cannot be added to the blacklist.')
+      else
+        __('Could not mark user as spam.')
+      end
+    end
+
+    def user_email_domain(user)
+      user.email.to_s.split('@', 2).last.to_s.strip.downcase.presence
+    end
+
+    def prepare_scan_stats!(stats)
+      spam_tag_mode = prefer_spam_tag_user_scan?
+      spam_engine_mode = prefer_spam_engine_user_scan?
+      blacklist_mode = prefer_disposable_domain_scan?
+      role = candidate_role
+      if !spam_tag_mode && !spam_engine_mode && !blacklist_mode && role.blank?
+        stats[:error] = 'candidate_role_missing'
+        return
+      end
+
+      relaxed_note = [spam_tag_mode && 'spam_tag', spam_engine_mode && 'spam_engine', blacklist_mode && 'blacklist'].select { |part| part }.join('+')
+      stats[:candidate_role] = if relaxed_note.present?
+                                 "#{role&.name || '-'} (ignored in #{relaxed_note} mode)"
+                               else
+                                 role.name
+                               end
+      stats[:scoring_enabled] = scoring_enabled?
+      stats[:score_threshold] = score_threshold
+      stats[:min_age_days] = min_age_days
+      stats[:max_age_days] = max_age_days
+      stats[:max_ticket_count] = max_ticket_count
+      stats[:scan_mode] = [spam_tag_mode && 'spam_tag', spam_engine_mode && 'spam_engine', blacklist_mode && 'blacklist', 'full'].select { |part| part }.join('+')
+      role
+    end
+
+    def cleanup_scan_for_domain(domain)
+      stats = empty_scan_stats
+      return stats.merge(error: 'inactive') if !active?
+
+      role = prepare_scan_stats!(stats)
+      return stats if stats[:error]
+
+      logger.info "Starting domain cleanup scan (domain=#{domain}, role=#{role&.name}, mode=#{stats[:scan_mode]}, scoring=#{scoring_enabled?}, threshold=#{score_threshold})"
+      cancel_pending_for_whitelisted
+      each_domain_scan_candidate(domain) do |user, user_spam_tag_mode|
+        stats[:considered] += 1
+        scan_user(user, role, stats, spam_tag_mode: user_spam_tag_mode)
+      rescue => e
+        stats[:errors] += 1
+        logger.error "Scan failed for user ##{user.id}: #{e.message}"
+      end
+      logger.info "Finished domain cleanup scan (domain=#{domain}, #{stats.inspect})"
+      stats
+    end
+
+    def each_domain_scan_candidate(domain)
+      normalized = IntakeShield::Blacklist.normalize_email_domain(domain)
+      return if normalized.blank?
+
+      spam_tag_ids = {}
+      if prefer_spam_tag_user_scan?
+        spam_tagged_customer_ids.each { |id| spam_tag_ids[id] = true }
+      end
+      spam_engine_ids = {}
+      if prefer_spam_engine_user_scan?
+        IntakeShield::SpamEngine.customer_ids.each { |id| spam_engine_ids[id] = true }
+      end
+
+      users_matching_email_domain(normalized).includes(:roles).order(:id).find_each do |user|
+        spam_tag_mode = spam_tag_ids[user.id] || spam_engine_ids[user.id] || false
+        yield user, spam_tag_mode
+      end
+    end
+
+    def users_matching_email_domain(domain)
+      escaped = User.sanitize_sql_like(domain)
+      User.where(
+        "LOWER(SPLIT_PART(email, '@', 2)) = ? OR LOWER(SPLIT_PART(email, '@', 2)) LIKE ?",
+        domain,
+        "%.#{escaped}",
+      )
+    end
 
     def truthy?(value)
       value == true || value.to_s.strip.casecmp('true').zero? || value.to_s.strip == '1'

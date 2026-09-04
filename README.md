@@ -59,6 +59,7 @@ IntakeShield helps on-premise Zammad instances reduce spam registrations and spa
 - The original message is kept or deleted according to the e-mail channel option **Keep messages on server** (IMAP/Graph/Google). IntakeShield does not talk to the mailbox itself.
 - Mode **All mail** also drops follow-ups. Domains auto-learned from deleted spam users apply here too — whitelist anything that must still get through.
 - Domains of deleted spam users are learned automatically. Freemail providers, mail-infrastructure hosts (e.g. `udag.de`), and government domains (`*.gov`, `*.gov.*`) are never learned and never score as disposable — existing poisoned entries are deactivated on upgrade.
+- Admins can also **Mark as spam** on a user under **Admin → Manage → Users → Actions** (classic UI). That adds the address (sub)domain to the blacklist. When the master switch is on, a targeted scan immediately queues matching accounts with the same rules as the hourly spam-user scan. Agents, admins, and never-disposable domains are rejected.
 
 #### Keywords
 
@@ -78,6 +79,7 @@ IntakeShield helps on-premise Zammad instances reduce spam registrations and spa
 - Optional scoring (`intake_shield_scoring_enabled`): signals such as never logged in, disposable domain, suspicious e-mail pattern, missing name, spam-tagged customer tickets, keyword matches, and gateway spam-engine headers. Candidates are scheduled only when the score reaches `intake_shield_score_threshold`.
 - Scheduled with delay `intake_shield_delay_hours` (default: 72; `0` = no delay). Due entries are executed every 30 minutes via `DataPrivacyTask`.
 - Admin UI **Spam → Users**: review queue, scan now, delete now, cancel, or add to whitelist.
+- From **Admin → Manage → Users**, **Mark as spam** blacklists the address domain; the scan then queues matching accounts (including the hourly run). Very new accounts still wait until `intake_shield_min_age_days`.
 
 #### Spam tickets (ticket-only cleanup)
 
@@ -300,6 +302,7 @@ IntakeShield hilft On-Premise-Zammad-Instanzen gegen Spam-Registrierungen und Sp
 - Die Originalmail wird je nach Kanal-Option **Nachrichten auf dem Server belassen** behalten oder gelöscht (IMAP/Graph/Google). IntakeShield spricht den Postfach-Server nicht selbst an.
 - Modus **Alle Mails** verwirft auch Follow-ups. Automatisch gelernte Domains gelöschter Spam-Benutzer gelten hier ebenfalls — alles, was durchkommen muss, auf die Whitelist setzen.
 - Domains gelöschter Spam-Benutzer werden automatisch ergänzt. Freemail-Anbieter, Mail-Infrastruktur (z. B. `udag.de`) und Behörden-Domains (`*.gov`, `*.gov.*`) werden weder gelernt noch als Wegwerf-Domain gewertet — vorhandene Fehl-Einträge werden beim Upgrade deaktiviert.
+- Admins können einen Benutzer unter **Admin → Manage → Users → Aktionen** (klassische UI) **Als Spam markieren**. Damit kommt die Adress-(Sub-)Domain auf die Blacklist. Ist der Hauptschalter an, merkt ein gezielter Scan passende Konten sofort nach denselben Regeln vor wie der stündliche Spam-Benutzer-Scan. Agents, Admins und Never-Disposable-Domains werden abgelehnt.
 
 #### Keywords
 
@@ -319,6 +322,7 @@ IntakeShield hilft On-Premise-Zammad-Instanzen gegen Spam-Registrierungen und Sp
 - Optionales Scoring (`intake_shield_scoring_enabled`): u. a. nie angemeldet, Wegwerf-Domain, verdächtiges E-Mail-Muster, fehlender Name, Spam-Tag auf Kunden-Tickets, Keyword-Treffer, Gateway-Spam-Engine-Header. Vormerkung erst ab `intake_shield_score_threshold`.
 - Verzögerung `intake_shield_delay_hours` (Standard: 72; `0` = keine Verzögerung). Fällige Einträge alle 30 Minuten per `DataPrivacyTask`.
 - Admin-UI **Spam → Benutzer**: Warteschlange, jetzt scannen, sofort löschen, abbrechen oder zur Whitelist hinzufügen.
+- Über **Admin → Manage → Users** setzt **Als Spam markieren** die Adressdomain auf die Blacklist; der Scan merkt passende Konten vor (auch der stündliche Lauf). Sehr neue Konten warten weiter auf `intake_shield_min_age_days`.
 
 #### Spam-Tickets (nur Ticket-Löschung)
 

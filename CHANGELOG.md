@@ -2,6 +2,10 @@
 
 Package versions are also recorded in `intake_shield.szpm`.
 
+## 0.9.0 — 2026-09-04
+
+Add **Mark as spam** to the classic Admin → Manage → Users action menu. That blacklists the user's e-mail (sub)domain; matching accounts are then queued by the existing spam-user scan.
+
 ## 0.8.2 — 2026-08-15
 
 Show Filters and Spam help text under the nav tabs (no Description button). Label the Settings master switch separately from the page heading.

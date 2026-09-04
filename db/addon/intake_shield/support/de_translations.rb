@@ -199,6 +199,19 @@ module IntakeShieldDeTranslations
     'Captcha could not be loaded. Please reload the page.'                                                         => 'Captcha konnte nicht geladen werden. Bitte die Seite neu laden.',
     'Verifying that you are human…'                                                                                => 'Prüfung, ob Sie ein Mensch sind…',
     'Verified'                                                                                                     => 'Bestätigt',
+    'Mark as spam'                                                                                                 => 'Als Spam markieren',
+    'Manually marked as spam by %s'                                                                                => 'Manuell als Spam markiert von %s',
+    'User could not be found.'                                                                                     => 'Benutzer wurde nicht gefunden.',
+    'The system user cannot be marked as spam.'                                                                    => 'Der Systembenutzer kann nicht als Spam markiert werden.',
+    'This user has no e-mail address.'                                                                             => 'Dieser Benutzer hat keine E-Mail-Adresse.',
+    'Agents and admins cannot be marked as spam.'                                                                  => 'Agents und Admins können nicht als Spam markiert werden.',
+    'This e-mail domain cannot be added to the blacklist.'                                                         => 'Diese E-Mail-Domain kann nicht zur Blacklist hinzugefügt werden.',
+    'Could not mark user as spam.'                                                                                 => 'Benutzer konnte nicht als Spam markiert werden.',
+    'Add the domain %s to the IntakeShield blacklist? Matching users will be queued by the spam-user scan.'        => 'Die Domain %s zur IntakeShield-Blacklist hinzufügen? Passende Benutzer werden durch den Spam-Benutzer-Scan vorgemerkt.',
+    'Domain %s is already on the blacklist. %s matching user(s) were scheduled.'                                   => 'Domain %s steht bereits auf der Blacklist. %s passende(r) Benutzer wurden vorgemerkt.',
+    'Domain %s is already on the blacklist.'                                                                       => 'Domain %s steht bereits auf der Blacklist.',
+    'Domain %s was added to the blacklist. %s matching user(s) were scheduled.'                                    => 'Domain %s wurde zur Blacklist hinzugefügt. %s passende(r) Benutzer wurden vorgemerkt.',
+    'Domain %s was added to the blacklist. Enable IntakeShield to scan matching users.'                            => 'Domain %s wurde zur Blacklist hinzugefügt. Aktivieren Sie IntakeShield, um passende Benutzer zu scannen.',
   }.freeze
 
   def self.apply!

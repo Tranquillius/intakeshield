@@ -45,19 +45,30 @@ class IntakeShield::Blacklist < ApplicationModel
 
   # Creates an active blacklist entry for a domain unless it already exists
   # or is never-disposable (freemail, mail infrastructure, government).
-  # Returns the created record, or nil.
-  def self.remember_domain!(domain, note: nil)
+  # Returns the created (or reactivated) record, or nil.
+  def self.remember_domain!(domain, note: nil, by: 1, reactivate: false)
     normalized = normalize_pattern_value(domain)
     return if normalized.blank?
     return if IntakeShield::NeverDisposable.pattern?(normalized)
-    return if exists?(['LOWER(pattern) = ?', normalized])
+
+    actor_id = actor_id_for(by)
+    existing = find_by(['LOWER(pattern) = ?', normalized])
+    if existing
+      return if existing.active?
+      return if !reactivate
+
+      attrs = { active: true, updated_by_id: actor_id }
+      attrs[:note] = note if note.present?
+      existing.update!(attrs)
+      return existing
+    end
 
     create!(
       pattern:       normalized,
       note:          note,
       active:        true,
-      created_by_id: 1,
-      updated_by_id: 1,
+      created_by_id: actor_id,
+      updated_by_id: actor_id,
     )
   end
 
@@ -119,6 +130,12 @@ class IntakeShield::Blacklist < ApplicationModel
     pattern.to_s.delete_prefix('*').delete_prefix('@').delete_prefix('.')
   end
   private_class_method :pattern_base
+
+  def self.actor_id_for(by)
+    id = by.respond_to?(:id) ? by.id.to_i : by.to_i
+    id.positive? ? id : 1
+  end
+  private_class_method :actor_id_for
 
   private
 

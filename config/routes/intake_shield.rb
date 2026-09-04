@@ -32,6 +32,8 @@ Zammad::Application.routes.draw do
   match api_path + '/intake_shield_pending_tickets/:id/cancel',     to: 'intake_shield_pending_tickets#cancel',      via: :post
   match api_path + '/intake_shield_pending_tickets/:id/execute',    to: 'intake_shield_pending_tickets#execute',     via: :post
 
+  match api_path + '/intake_shield/users/:id/mark_spam', to: 'intake_shield_users#mark_spam', via: :post
+
   match api_path + '/intake_shield/captcha_config',    to: 'intake_shield_captcha#configuration', via: :get
   match api_path + '/intake_shield/captcha_challenge', to: 'intake_shield_captcha#challenge',     via: :get
   match api_path + '/intake_shield/captcha_script',    to: 'intake_shield_captcha#script',        via: :get

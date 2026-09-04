@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+# Prints the CHANGELOG.md section for a version (GitHub Release body).
+#
+# Usage:
+#   bin/changelog-notes           # version from intake_shield.szpm
+#   bin/changelog-notes 0.9.0
+#
+# The heading must look like: ## [0.9.0] - 2026-09-04
+
+require 'json'
+
+ROOT = File.expand_path('..', __dir__).freeze
+CHANGELOG = File.join(ROOT, 'CHANGELOG.md').freeze
+SZPM = File.join(ROOT, 'intake_shield.szpm').freeze
+REPO = 'https://github.com/Tranquillius/intakeshield'.freeze
+
+def changelog_version_headings(text)
+  text.scan(/^## \[([^\]]+)\]/).flatten.reject { |name| name == 'Unreleased' }
+end
+
+def section_for(text, version)
+  heading = /^## \[#{Regexp.escape(version)}\][^\n]*\n/
+  match = heading.match(text)
+  return if match.nil?
+
+  start_at = match.end(0)
+  rest = text[start_at..]
+  stop = rest.index(/^## \[/)
+  body = stop ? rest[0...stop] : rest.sub(/\n\[[^\]]+\]:\s+\S+\s*\z/m, "\n")
+  body = body.sub(/\n(?:\[[^\]]+\]:\s+\S+\s*)+\z/m, "\n")
+  body.strip
+end
+
+def previous_version(versions, version)
+  index = versions.index(version)
+  return if index.nil?
+
+  versions[index + 1]
+end
+
+abort("Changelog not found: #{CHANGELOG}") if !File.exist?(CHANGELOG)
+
+version = (ARGV[0] || JSON.parse(File.read(SZPM)).fetch('version')).to_s.strip
+abort('Usage: bin/changelog-notes [version]') if version.empty?
+
+text = File.read(CHANGELOG)
+versions = changelog_version_headings(text)
+body = section_for(text, version)
+abort("CHANGELOG.md has no ## [#{version}] section") if body.nil? || body.empty?
+
+puts "## #{version}"
+puts
+puts body
+puts
+puts "Install: **Admin → Packages** → upload `intake_shield-#{version}.zpm`, then `zammad run rake zammad:package:post_install` and restart Zammad."
+
+previous = previous_version(versions, version)
+if previous
+  puts
+  puts "**Full Changelog**: #{REPO}/compare/v#{previous}...v#{version}"
+else
+  puts
+  puts "**Full Changelog**: #{REPO}/releases/tag/v#{version}"
+end

@@ -26,16 +26,18 @@ Do not commit `.zpm` files, `tmp/`, logs, or data from a live Zammad instance.
 - Keep examples generic (`@example.com`, `user@mail.example.com`). Do not add hostnames, e-mail domains, or URLs from a real helpdesk.
 - Addon migrations under `db/addon/intake_shield/` must use a **unique** timestamp prefix. Do not rename migrations that already shipped in a release.
 - Match existing Ruby / CoffeeScript style. Prefer small, focused changes.
-- Update `intake_shield.szpm` (`version`, `change_log`) and [CHANGELOG.md](CHANGELOG.md) when the public version changes.
+- Update `intake_shield.szpm` (`version`, `change_log`) and [CHANGELOG.md](CHANGELOG.md) when the public version changes. GitHub Release notes are generated from the `## [x.y.z]` section in `CHANGELOG.md`.
 - Security issues: see [SECURITY.md](SECURITY.md). Do not file them as public issues.
 
 ## Releases
 
-1. Bump `version` and `change_log` in `intake_shield.szpm` and [CHANGELOG.md](CHANGELOG.md).
-2. Tag `v<version>` on the GitHub `main` branch (for example `v0.5.0`).
-3. The [release workflow](.github/workflows/release.yml) builds the `.zpm` and attaches it to a GitHub Release.
+1. Move finished items out of **Unreleased** in [CHANGELOG.md](CHANGELOG.md) into a new top-level heading `## [x.y.z] - YYYY-MM-DD`. Add the compare link in the footer (`[x.y.z]: https://github.com/Tranquillius/intakeshield/compare/vPREV...vX.Y.Z`) and point **Unreleased** at `vX.Y.Z...HEAD`.
+2. Bump `version` and `change_log` in `intake_shield.szpm`.
+3. Preview the GitHub Release body with `bin/changelog-notes x.y.z`.
+4. Tag `v<version>` on the GitHub `main` branch (for example `v0.9.0`).
+5. The [release workflow](.github/workflows/release.yml) builds the `.zpm` and publishes a GitHub Release whose notes come from that changelog section.
 
-You can also run `bin/build <version>` locally and attach the file by hand.
+You can also run `bin/build <version>` locally and attach the file by hand. `bin/build` warns if `CHANGELOG.md` has no matching `## [x.y.z]` section.
 
 ## Publishing this tree to GitHub (maintainers)
 
@@ -71,6 +73,6 @@ Do **not** `git push github main` from GitLab `main`, and do **not** push branch
 
 # Mitwirken (Deutsch)
 
-Pull Requests und Issues bitte gegen das **öffentliche GitHub-Repo**. Keine Instanzdaten, keine `.zpm`-Dateien und keine Logs committen. Sicherheitslücken privat über [SECURITY.md](SECURITY.md) melden.
+Pull Requests und Issues bitte gegen das **öffentliche GitHub-Repo**. Keine Instanzdaten, keine `.zpm`-Dateien und keine Logs committen. Sicherheitslücken privat über [SECURITY.md](SECURITY.md) melden. GitHub-Release-Texte kommen aus der jeweiligen `## [x.y.z]`-Sektion in [CHANGELOG.md](CHANGELOG.md); vor einem Tag `bin/changelog-notes x.y.z` prüfen.
 
 Die GitLab-Historie darf nicht nach GitHub gepusht werden; der öffentliche Stand lebt auf dem lokalen Branch `public` und geht nur an das Remote `github`.

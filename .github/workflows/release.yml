@@ -25,8 +25,14 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           bin/build "$VERSION"
 
+      - name: Release notes from CHANGELOG
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          bin/changelog-notes "$VERSION" > /tmp/release-notes.md
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: releases/intake_shield-*.zpm
-          generate_release_notes: true
+          body_path: /tmp/release-notes.md
+          generate_release_notes: false

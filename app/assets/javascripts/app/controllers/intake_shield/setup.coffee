@@ -176,5 +176,10 @@ do ->
       border: 0;
       padding-top: 0.65rem;
     }
+    .js-intake-shield-mark-spam .icon,
+    .js-intake-shield-mark-spam.icon {
+      width: 16px;
+      height: 16px;
+    }
   '''
   document.head.appendChild(style)

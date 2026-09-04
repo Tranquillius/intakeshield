@@ -46,6 +46,11 @@ version = ARGV[0] || manifest['version']
 abort('Usage: bin/build [version]') if version.to_s.strip.empty?
 manifest['version'] = version
 
+changelog = File.join(ROOT, 'CHANGELOG.md')
+if File.exist?(changelog) && !File.read(changelog).match?(/^## \[#{Regexp.escape(version.to_s)}\]/)
+  warn "CHANGELOG.md has no ## [#{version}] section — add one before tagging a GitHub release"
+end
+
 zpm = manifest.dup
 zpm['buildhost'] = 'intakeshield'
 zpm['builddate'] = Time.now.utc.strftime('%Y-%m-%d %H:%M:%S UTC')

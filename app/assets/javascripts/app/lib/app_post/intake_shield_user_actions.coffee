@@ -36,8 +36,8 @@ class App.IntakeShieldUserActions
     actions.push(
       name: 'intakeShieldMarkSpam'
       display: __('Mark as spam')
-      icon: 'ignore'
-      class: 'js-intake-shield-mark-spam'
+      icon: 'danger'
+      class: 'danger js-intake-shield-mark-spam'
       available: (user) -> App.IntakeShieldUserActions.available(user)
       callback: (id) -> App.IntakeShieldUserActions.confirm(id, controller)
     )

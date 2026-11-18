@@ -1,6 +1,6 @@
 {
   "name": "IntakeShield",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "vendor": "IntakeShield",
   "license": "GNU Affero General Public License v3.0 (AGPL-3.0)",
   "url": "https://github.com/Tranquillius/intakeshield",
@@ -94,6 +94,11 @@
       "version": "0.9.1",
       "date": "2026-09-04 00:00:00 UTC",
       "log": "Fix oversized Mark as spam action icon in Manage Users. GitHub Release notes come from CHANGELOG.md."
+    },
+    {
+      "version": "0.10.0",
+      "date": "2026-11-18 00:00:00 UTC",
+      "log": "Optional suspicious-script scoring signal: user names, ticket titles or first article bodies written mostly in selected scripts (e.g. Han, Hiragana, Katakana) raise the spam score. Off until a script is selected."
     }
   ],
   "description": [

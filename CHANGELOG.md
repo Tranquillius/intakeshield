@@ -8,9 +8,15 @@ Only tagged GitHub releases are top-level headings. Package versions that were n
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-18
+
 ### Added
 
 - **Suspicious scripts**: optional `suspicious_script` scoring signal (default weight 50). Pick character sets such as Han, Hiragana and Katakana under Settings → Cleanup; a user name, ticket title or first article body written mostly in them (share of letters ≥ `intake_shield_suspicious_script_ratio`, default 30 %) raises the spam score. URLs, e-mail addresses and HTML are ignored. Off until a script is selected.
+
+### Changed
+
+- README: on Zammad 7.2.2 a failed `pnpm install` during package precompile leaves the plugin out of the classic UI assets; run `zammad run rake zammad:package:precompile` and restart Zammad to recover.
 
 ## [0.9.1] - 2026-09-04
 
@@ -75,7 +81,8 @@ This GitHub release also includes earlier package versions that were not tagged 
 - **0.3.5** — Maximum account age setting, whitelist role removal, and hourly user cleanup scan.
 - **0.1.0** — Initial version.
 
-[Unreleased]: https://github.com/Tranquillius/intakeshield/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/Tranquillius/intakeshield/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/Tranquillius/intakeshield/compare/v0.9.1...v0.10.0
 [0.9.1]: https://github.com/Tranquillius/intakeshield/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/Tranquillius/intakeshield/compare/v0.8.2...v0.9.0
 [0.8.2]: https://github.com/Tranquillius/intakeshield/compare/v0.8.0...v0.8.2

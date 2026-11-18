@@ -8,6 +8,12 @@ Only tagged GitHub releases are top-level headings. Package versions that were n
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-11-18
+
+### Fixed
+
+- **Package precompile crash**: `rails generate zammad:setting_types` (run by `zammad:package:precompile` / `post_install`) failed with ``undefined method 'keys' for nil`` because the role pickers (`intake_shield_whitelist_role_id`, `intake_shield_whitelist_remove_role_ids`, `intake_shield_candidate_role_id`) were frontend select settings without static options. They are now backend-only; a migration updates existing installs. This failure left the classic UI assets without IntakeShield's code.
+
 ## [0.10.0] - 2026-11-18
 
 ### Added
@@ -81,7 +87,8 @@ This GitHub release also includes earlier package versions that were not tagged 
 - **0.3.5** — Maximum account age setting, whitelist role removal, and hourly user cleanup scan.
 - **0.1.0** — Initial version.
 
-[Unreleased]: https://github.com/Tranquillius/intakeshield/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/Tranquillius/intakeshield/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/Tranquillius/intakeshield/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/Tranquillius/intakeshield/compare/v0.9.1...v0.10.0
 [0.9.1]: https://github.com/Tranquillius/intakeshield/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/Tranquillius/intakeshield/compare/v0.8.2...v0.9.0

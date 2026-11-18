@@ -93,7 +93,7 @@ class EnsureUpgradeFrom021 < ActiveRecord::Migration[7.0]
         permission: ['admin.intake_shield'],
       },
       state:       [],
-      frontend:    true
+      frontend:    false
     )
   end
 

@@ -1,6 +1,6 @@
 {
   "name": "IntakeShield",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "vendor": "IntakeShield",
   "license": "GNU Affero General Public License v3.0 (AGPL-3.0)",
   "url": "https://github.com/Tranquillius/intakeshield",
@@ -99,6 +99,11 @@
       "version": "0.10.0",
       "date": "2026-11-18 00:00:00 UTC",
       "log": "Optional suspicious-script scoring signal: user names, ticket titles or first article bodies written mostly in selected scripts (e.g. Han, Hiragana, Katakana) raise the spam score. Off until a script is selected."
+    },
+    {
+      "version": "0.10.1",
+      "date": "2026-11-18 00:00:00 UTC",
+      "log": "Fix package precompile crash in the setting-types generator: role picker settings are now backend-only."
     }
   ],
   "description": [
@@ -466,6 +471,10 @@
     },
     {
       "location": "db/addon/intake_shield/20261118000000_add_suspicious_scripts.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20261118000001_role_settings_backend_only.rb",
       "permission": 644
     },
     {

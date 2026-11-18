@@ -144,7 +144,7 @@ class CreateBase < ActiveRecord::Migration[7.0]
         permission: ['admin.intake_shield'],
       },
       state:       customer_role_id,
-      frontend:    true
+      frontend:    false
     )
     Setting.create_if_not_exists(
       title:       __('Candidate Role'),
@@ -167,7 +167,7 @@ class CreateBase < ActiveRecord::Migration[7.0]
         permission: ['admin.intake_shield'],
       },
       state:       customer_role_id,
-      frontend:    true
+      frontend:    false
     )
     Setting.create_if_not_exists(
       title:       __('Minimum Account Age (days)'),

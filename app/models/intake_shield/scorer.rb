@@ -9,6 +9,7 @@ class IntakeShield::Scorer
     missing_name
     spam_tag
     spam_keyword
+    suspicious_script
     spam_engine
   ].freeze
 
@@ -20,6 +21,7 @@ class IntakeShield::Scorer
     missing_name:             __('Missing name'),
     spam_tag:                 __('Tagged spam ticket'),
     spam_keyword:             __('Spam keyword'),
+    suspicious_script:        __('Suspicious script'),
     spam_engine:              __('Spam engine'),
   }.freeze
 
@@ -130,15 +132,38 @@ class IntakeShield::Scorer
     keywords = IntakeShield::Keyword.active_keywords
     return false if keywords.blank?
 
-    @user.customer_tickets.find_each do |ticket|
-      first_article = ticket.articles.reorder(:id).first
-      text = [ticket.title, first_article&.body].compact.join("\n")
-      return true if IntakeShield::Keyword.matches_text?(text, keywords)
+    first_articles.any? do |ticket, article|
+      text = [ticket.title, article&.body].compact.join("\n")
+      IntakeShield::Keyword.matches_text?(text, keywords)
     end
-
-    false
   rescue ActiveRecord::StatementInvalid, NameError
     false
+  end
+
+  # True when the user's name, or the title or first article body of a
+  # customer ticket, is written mostly in a script marked as suspicious.
+  def suspicious_script?
+    scripts = IntakeShield::ScriptDetector.configured_scripts
+    return false if scripts.blank?
+
+    ratio = IntakeShield::ScriptDetector.min_ratio
+    name = [@user.firstname, @user.lastname].compact.join(' ')
+    return true if IntakeShield::ScriptDetector.suspicious?(name, scripts: scripts, ratio: ratio)
+
+    first_articles.any? do |ticket, article|
+      IntakeShield::ScriptDetector.suspicious?(ticket.title, scripts: scripts, ratio: ratio) ||
+        IntakeShield::ScriptDetector.suspicious?(IntakeShield::ScriptDetector.article_text(article), scripts: scripts, ratio: ratio)
+    end
+  rescue ActiveRecord::StatementInvalid, NameError
+    false
+  end
+
+  # [ticket, first article] pairs of the user's customer tickets, shared by
+  # the text based signals.
+  def first_articles
+    @first_articles ||= @user.customer_tickets.map do |ticket|
+      [ticket, ticket.articles.reorder(:id).first]
+    end
   end
 
   # True when inbound mail was classified as spam by a gateway engine

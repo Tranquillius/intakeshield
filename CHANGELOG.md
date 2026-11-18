@@ -8,6 +8,10 @@ Only tagged GitHub releases are top-level headings. Package versions that were n
 
 ## [Unreleased]
 
+### Added
+
+- **Suspicious scripts**: optional `suspicious_script` scoring signal (default weight 50). Pick character sets such as Han, Hiragana and Katakana under Settings → Cleanup; a user name, ticket title or first article body written mostly in them (share of letters ≥ `intake_shield_suspicious_script_ratio`, default 30 %) raises the spam score. URLs, e-mail addresses and HTML are ignored. Off until a script is selected.
+
 ## [0.9.1] - 2026-09-04
 
 ### Fixed

@@ -356,6 +356,7 @@ class CreateBase < ActiveRecord::Migration[7.0]
           'missing_name'             => 10,
           'spam_tag'                 => 50,
           'spam_keyword'             => 50,
+          'suspicious_script'        => 50,
           'spam_engine'              => 50,
         }
       ),
@@ -365,6 +366,67 @@ class CreateBase < ActiveRecord::Migration[7.0]
     create_drop_blacklisted_mail_settings
     create_spam_engine_settings
     create_whitelist_signup_settings
+    create_suspicious_script_settings
+  end
+
+  def self.create_suspicious_script_settings
+    Setting.create_if_not_exists(
+      title:       __('Suspicious scripts'),
+      name:        'intake_shield_suspicious_scripts',
+      area:        'IntakeShield::Spam',
+      description: __('Character sets (scripts) that count as suspicious. Raises the spam score when the user name, a ticket title or the first article body is written mostly in one of them. For Japanese spam select Han, Hiragana and Katakana. Leave empty to disable.'),
+      options:     {
+        form: [
+          {
+            display:  '',
+            null:     true,
+            name:     'intake_shield_suspicious_scripts',
+            tag:      'select',
+            multiple: true,
+            options:  {
+              'han'        => 'Han (Chinese, Japanese Kanji)',
+              'hiragana'   => 'Hiragana (Japanese)',
+              'katakana'   => 'Katakana (Japanese)',
+              'hangul'     => 'Hangul (Korean)',
+              'cyrillic'   => 'Cyrillic',
+              'greek'      => 'Greek',
+              'arabic'     => 'Arabic',
+              'hebrew'     => 'Hebrew',
+              'thai'       => 'Thai',
+              'devanagari' => 'Devanagari',
+            },
+          },
+        ],
+      },
+      preferences: {
+        prio:       1850,
+        permission: ['admin.intake_shield'],
+      },
+      state:       [],
+      frontend:    true
+    )
+    Setting.create_if_not_exists(
+      title:       __('Suspicious script share (%)'),
+      name:        'intake_shield_suspicious_script_ratio',
+      area:        'IntakeShield::Spam',
+      description: __('Minimum share of letters (in percent) that must belong to the suspicious scripts. URLs and e-mail addresses are ignored. A few foreign characters in an otherwise German or English text do not count.'),
+      options:     {
+        form: [
+          {
+            display: '',
+            null:    false,
+            name:    'intake_shield_suspicious_script_ratio',
+            tag:     'input',
+          },
+        ],
+      },
+      preferences: {
+        prio:       1860,
+        permission: ['admin.intake_shield'],
+      },
+      state:       30,
+      frontend:    true
+    )
   end
 
   def self.create_whitelist_signup_settings

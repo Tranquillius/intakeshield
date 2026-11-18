@@ -23,6 +23,10 @@ IntakeShieldSettingsSections =
     'intake_shield_score_threshold'
     'intake_shield_score_weights'
   ]
+  scripts: [
+    'intake_shield_suspicious_scripts'
+    'intake_shield_suspicious_script_ratio'
+  ]
   engine: [
     'intake_shield_spam_engine'
     'intake_shield_spam_engine_backend'
@@ -126,6 +130,11 @@ class App.ControllerIntakeShieldSettings extends App.ControllerTabs
             {
               description: __('Settings for detecting spam users/tickets and scheduling deletions.')
               names: IntakeShieldSettingsSections.cleanup
+            }
+            {
+              heading: __('Suspicious scripts')
+              description: __('Text written mostly in the selected character sets raises the spam score.')
+              names: IntakeShieldSettingsSections.scripts
             }
           ]
       }

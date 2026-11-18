@@ -296,6 +296,10 @@
       "permission": 644
     },
     {
+      "location": "app/models/intake_shield/script_detector.rb",
+      "permission": 644
+    },
+    {
       "location": "app/models/intake_shield/signup_allowlist.rb",
       "permission": 644
     },
@@ -453,6 +457,10 @@
     },
     {
       "location": "db/addon/intake_shield/20260904000000_add_mark_spam_user_action.rb",
+      "permission": 644
+    },
+    {
+      "location": "db/addon/intake_shield/20261118000000_add_suspicious_scripts.rb",
       "permission": 644
     },
     {

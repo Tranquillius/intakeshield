@@ -67,6 +67,12 @@ IntakeShield helps on-premise Zammad instances reduce spam registrations and spa
 - Case-insensitive match in ticket title and first article body raises the spam score (`spam_keyword` signal).
 - A default German-oriented seed list is installed with the package.
 
+#### Suspicious scripts
+
+- Select character sets in **Admin → IntakeShield → Settings → Cleanup → Suspicious scripts** (Han, Hiragana, Katakana, Hangul, Cyrillic, Greek, Arabic, Hebrew, Thai, Devanagari). For Chinese and Japanese spam select Han, Hiragana and Katakana.
+- The `suspicious_script` signal fires when the user name, a ticket title or the first article body is written mostly in those scripts: their share of the letters must reach `intake_shield_suspicious_script_ratio` (default 30 %) and at least 3 characters must match. URLs, e-mail addresses and HTML markup are ignored. A German mail that quotes a Chinese name does not count.
+- Off until at least one script is selected.
+
 #### Spam users (account cleanup)
 
 - Hourly scan finds deletion candidates.
@@ -140,6 +146,17 @@ ALTCHA proof-of-work runs in the page (no CDN, no Web Workers).
    systemctl restart zammad
    ```
 
+   > **Zammad 7.2.2 note:** on 7.2.2 the package precompile runs `pnpm install`
+   > for every package, even classic-UI-only ones like this. If that step fails
+   > during the install, the asset bundle is left without IntakeShield's code and
+   > the admin tabs/actions never appear (the plugin looks "incompatible"). If that
+   > happens, rebuild the assets manually and restart:
+   >
+   > ```bash
+   > zammad run rake zammad:package:precompile
+   > systemctl restart zammad
+   > ```
+
 4. Follow [Recommended setup](#recommended-setup-neu-role-and-spam-tag) (`Neu` role, `SPAM` tag, and the `Mark as Spam and Close` macro), then open **Admin → IntakeShield**, fill Filters / Spam queues / Settings, and enable the master switch in the Settings header.
 
 > **Warning:** Data Privacy deletions are permanent. Use the delay and the Spam → Users / Tickets queues to review candidates before execution.
@@ -194,7 +211,7 @@ For ticket cleanup and the `spam_tag` score to run, set `intake_shield_spam_tag`
 
 ### Configuration (Admin → IntakeShield → Settings)
 
-The master switch is the toggle in the Settings page header. Settings are grouped into **General**, **Blacklist**, **Cleanup**, and **Spam Engine**.
+The master switch is the toggle in the Settings page header. Settings are grouped into **General**, **Blacklist**, **Cleanup** (including **Suspicious scripts**), and **Spam Engine**.
 
 | Setting | Default | Description |
 | --- | --- | --- |
@@ -210,7 +227,9 @@ The master switch is the toggle in the Settings page header. Settings are groupe
 | `intake_shield_scoring_enabled` | `false` | Enable score-based scheduling |
 | `intake_shield_spam_tag` | *(empty)* | Ticket tag used as scoring / ticket-scan signal |
 | `intake_shield_score_threshold` | `100` | Minimum score to schedule deletion |
-| `intake_shield_score_weights` | JSON | Weights per signal (`never_logged_in`, `low_ticket_count`, `disposable_domain`, `suspicious_email_pattern`, `missing_name`, `spam_tag`, `spam_keyword`, `spam_engine`, …) |
+| `intake_shield_score_weights` | JSON | Weights per signal (`never_logged_in`, `low_ticket_count`, `disposable_domain`, `suspicious_email_pattern`, `missing_name`, `spam_tag`, `spam_keyword`, `suspicious_script`, `spam_engine`, …) |
+| `intake_shield_suspicious_scripts` | `[]` | Character sets that count as suspicious for the `suspicious_script` signal; empty disables it |
+| `intake_shield_suspicious_script_ratio` | `30` | Minimum share of letters (percent) in the selected scripts |
 | `intake_shield_spam_engine` | `off` | Gateway spam headers / optional local daemon as scoring signal (`off`, `headers`, `live`). Independent of the master switch. Engines are not bundled. |
 | `intake_shield_spam_engine_backend` | `spamassassin` | Live-mode daemon: `spamassassin` (spamd) or `rspamd` |
 | `intake_shield_spam_engine_host` | `127.0.0.1` | Live-mode host (keep local) |
@@ -310,6 +329,12 @@ IntakeShield hilft On-Premise-Zammad-Instanzen gegen Spam-Registrierungen und Sp
 - Groß-/Kleinschreibung wird ignoriert; Treffer in Ticket-Titel und erstem Artikel-Body erhöhen den Spam-Score (`spam_keyword`).
 - Mit dem Paket wird eine Standard-Keyword-Liste mitgeliefert.
 
+#### Verdächtige Schriften
+
+- Zeichensätze unter **Admin → IntakeShield → Einstellungen → Bereinigung → Verdächtige Schriften** auswählen (Han, Hiragana, Katakana, Hangul, Kyrillisch, Griechisch, Arabisch, Hebräisch, Thailändisch, Devanagari). Für chinesischen und japanischen Spam Han, Hiragana und Katakana auswählen.
+- Das Signal `suspicious_script` greift, wenn Benutzername, Ticket-Titel oder erster Artikel-Body überwiegend in diesen Schriften geschrieben sind: Ihr Anteil an den Buchstaben muss `intake_shield_suspicious_script_ratio` erreichen (Standard 30 %), und mindestens 3 Zeichen müssen passen. URLs, E-Mail-Adressen und HTML-Markup werden ignoriert. Eine deutsche Mail, die einen chinesischen Namen zitiert, zählt nicht.
+- Inaktiv, solange keine Schrift ausgewählt ist.
+
 #### Spam-Benutzer (Kontenbereinigung)
 
 - Stündlicher Scan findet Löschkandidaten.
@@ -383,6 +408,18 @@ ALTCHA-Proof-of-Work läuft in der Seite (kein CDN, keine Web Worker).
    systemctl restart zammad
    ```
 
+   > **Hinweis zu Zammad 7.2.2:** Unter 7.2.2 führt der Paket-Precompile bei jedem
+   > Paket `pnpm install` aus, auch bei reinen Classic-UI-Paketen wie diesem.
+   > Schlägt dieser Schritt während der Installation fehl, bleibt das Asset-Bundle
+   > ohne den IntakeShield-Code, und die Admin-Tabs/-Aktionen erscheinen nicht
+   > (das Plugin wirkt „inkompatibel“). In diesem Fall die Assets manuell neu bauen
+   > und neu starten:
+   >
+   > ```bash
+   > zammad run rake zammad:package:precompile
+   > systemctl restart zammad
+   > ```
+
 4. Zuerst [Empfohlene Einrichtung](#empfohlene-einrichtung-rolle-neu-und-tag-spam) (Rolle `Neu`, Tag `SPAM` und Makro `Mark as Spam and Close`), danach **Admin → IntakeShield** öffnen, Filter / Spam-Warteschlangen / Einstellungen pflegen und den Hauptschalter in der Einstellungs-Überschrift aktivieren.
 
 > **Achtung:** Löschungen über Data Privacy sind endgültig. Nutze den Delay und die Übersichten Spam → Benutzer / Tickets zur Prüfung vor der Ausführung.
@@ -437,7 +474,7 @@ Damit Ticket-Cleanup und das Signal `spam_tag` laufen, `intake_shield_spam_tag` 
 
 ### Konfiguration (Admin → IntakeShield → Einstellungen)
 
-Der Hauptschalter sitzt in der Überschrift der Einstellungsseite. Die Optionen sind auf **Allgemein**, **Blacklist**, **Bereinigung** und **Spam-Engine** aufgeteilt.
+Der Hauptschalter sitzt in der Überschrift der Einstellungsseite. Die Optionen sind auf **Allgemein**, **Blacklist**, **Bereinigung** (inklusive **Verdächtige Schriften**) und **Spam-Engine** aufgeteilt.
 
 | Setting | Standard | Beschreibung |
 | --- | --- | --- |
@@ -453,7 +490,9 @@ Der Hauptschalter sitzt in der Überschrift der Einstellungsseite. Die Optionen 
 | `intake_shield_scoring_enabled` | `false` | Score-basiertes Vormerken aktivieren |
 | `intake_shield_spam_tag` | *(leer)* | Ticket-Tag als Scoring- / Ticket-Scan-Signal |
 | `intake_shield_score_threshold` | `100` | Mindest-Score für Vormerkung |
-| `intake_shield_score_weights` | JSON | Gewichte der Signale (`never_logged_in`, `low_ticket_count`, `disposable_domain`, `suspicious_email_pattern`, `missing_name`, `spam_tag`, `spam_keyword`, `spam_engine`, …) |
+| `intake_shield_score_weights` | JSON | Gewichte der Signale (`never_logged_in`, `low_ticket_count`, `disposable_domain`, `suspicious_email_pattern`, `missing_name`, `spam_tag`, `spam_keyword`, `suspicious_script`, `spam_engine`, …) |
+| `intake_shield_suspicious_scripts` | `[]` | Zeichensätze, die für das Signal `suspicious_script` als verdächtig gelten; leer = deaktiviert |
+| `intake_shield_suspicious_script_ratio` | `30` | Mindestanteil der Buchstaben (Prozent) in den ausgewählten Schriften |
 | `intake_shield_spam_engine` | `off` | Gateway-Spam-Header / optionaler lokaler Daemon als Scoring-Signal (`off`, `headers`, `live`). Unabhängig vom Hauptschalter. Engines sind nicht Bestandteil des Pakets. |
 | `intake_shield_spam_engine_backend` | `spamassassin` | Daemon im Live-Modus: `spamassassin` (spamd) oder `rspamd` |
 | `intake_shield_spam_engine_host` | `127.0.0.1` | Host im Live-Modus (lokal halten) |
